@@ -26,8 +26,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("lina-bot")
 
-TOKEN = os.environ.get("BOT_TOKEN", "").strip()
-POLYGONSCAN_API_KEY = os.environ.get("POLYGONSCAN_API_KEY", "").strip()
+BOT_TOKEN = os.environ.get("BOT_TOKEN", "").strip()POLYGONSCAN_API_KEY = os.environ.get("POLYGONSCAN_API_KEY", "").strip()
 
 ADMIN_ID = 7123144123
 WEB3_WALLET = "0x0e3c35B1242dB3f7E60E554266eB7be90706f355"
