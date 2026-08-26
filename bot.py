@@ -40,7 +40,8 @@ PAYMENT_TOLERANCE = 0.05
 
 # A harmless placeholder keeps module import and static checks usable before
 # the user adds the real Secret. validate_configuration() blocks startup.
-bot = Bot(token=TOKEN or "000000:placeholder")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher(bot)
 user_data: dict[int, dict[str, Any]] = {}
 used_payments: set[str] = set()
