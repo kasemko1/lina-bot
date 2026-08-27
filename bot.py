@@ -41,7 +41,8 @@ TRANSLATIONS = {
         "ledger_report": "📊 **السجل المحاسبي الرقمي والتقارير:**\n\n- إجمالي المعاملات المسجلة: {count}\n- الحالة القانونية: موثق رقمياً (أبيض 100%)\n- جاهز لاستخراج التقارير الضريبية للشركة.",
         "web3_voice": "لإتمام الطلب، يرجى دفع رسوم فتح الطلب وقدرها خمسين سنت فقط عبر العملات الرقمية.",
         "web3_text": "💳 **الدفع عبر العملات الرقمية (Web3):**\n\n📍 **العنوان:** `{wallet}`\n🌐 **الشبكة:** {network}\n💰 **المبلغ المطلوب:** 0.50 USDT\n\nبعد الدفع، يرجى إرسال رقم العملية (Tx Hash) الذي يبدأ بـ (0x...).",
-        "selected": "لقد اخترت: **{category}**.\n\nيرجى المتابعة لاختيار طريقة الدفع:"
+        "selected": "لقد اخترت: **{category}**.\n\nيرجى المتابعة لاختيار طريقة الدفع:",
+        "quick_reply": "أهلاً بك! كيف يمكنني مساعدتك اليوم؟ اختر من الأزرار أو اكتب طلبك مباشرة."
     },
     "en": {
         "welcome": "Welcome! I am Lina\nOrder Fee €0.50 - Monthly Subscription €2.99\nDigital accounting & automated billing system.\nHow can I help you today?",
@@ -65,7 +66,8 @@ TRANSLATIONS = {
         "ledger_report": "📊 **Digital Accounting Ledger:**\n\n- Total Logged Transactions: {count}\n- Status: Fully Verified (100% White)\n- Ready for tax reports.",
         "web3_voice": "To complete the order, please pay the opening fee of only fifty cents via cryptocurrencies.",
         "web3_text": "💳 **Payment via Crypto (Web3):**\n\n📍 **Address:** `{wallet}`\n🌐 **Network:** {network}\n💰 **Amount Required:** 0.50 USDT\n\nAfter payment, please send the transaction hash (Tx Hash) starting with (0x...).",
-        "selected": "You have selected: **{category}**.\n\nPlease proceed by choosing the payment method:"
+        "selected": "You have selected: **{category}**.\n\nPlease proceed by choosing the payment method:",
+        "quick_reply": "Hello! How can I help you today? Choose from the buttons or type your request directly."
     },
     "fr": {
         "welcome": "Bienvenue! Je suis Lina\nSystème comptable numérique.",
@@ -89,7 +91,8 @@ TRANSLATIONS = {
         "ledger_report": "📊 Registre comptable: {count} transactions.",
         "web3_voice": "Veuillez payer les frais.",
         "web3_text": "💳 **Paiement Crypto:** `{wallet}`",
-        "selected": "Vous avez sélectionné: **{category}**."
+        "selected": "Vous avez sélectionné: **{category}**.",
+        "quick_reply": "Bonjour! Comment puis-je vous aider aujourd'hui?"
     },
     "es": {
         "welcome": "¡Bienvenido! Soy Lina\nSistema de contabilidad digital.",
@@ -113,7 +116,8 @@ TRANSLATIONS = {
         "ledger_report": "📊 Libro contable: {count} transacciones.",
         "web3_voice": "Pague la tarifa.",
         "web3_text": "💳 **Pago Cripto:** `{wallet}`",
-        "selected": "Has seleccionado: **{category}**."
+        "selected": "Has seleccionado: **{category}**.",
+        "quick_reply": "¡Hola! ¿Cómo puedo ayudarte hoy?"
     },
     "it": {
         "welcome": "Benvenuto! Sono Lina\nSistema di contabilità digitale.",
@@ -137,7 +141,8 @@ TRANSLATIONS = {
         "ledger_report": "📊 Registro contabile: {count} transazioni.",
         "web3_voice": "Paga la commissione.",
         "web3_text": "💳 **Pagamento Cripto:** `{wallet}`",
-        "selected": "Hai selezionato: **{category}**."
+        "selected": "Hai selezionato: **{category}**.",
+        "quick_reply": "Ciao! Come posso aiutarti oggi?"
     },
     "de": {
         "welcome": "Willkommen! Ich bin Lina\nDigitales Buchhaltungssystem.",
@@ -161,7 +166,8 @@ TRANSLATIONS = {
         "ledger_report": "📊 Buchhaltung: {count} Transaktionen.",
         "web3_voice": "Zahlen Sie die Gebühr.",
         "web3_text": "💳 **Krypto-Zahlung:** `{wallet}`",
-        "selected": "Sie haben ausgewählt: **{category}**."
+        "selected": "Sie haben ausgewählt: **{category}**.",
+        "quick_reply": "Hallo! Wie kann ich Ihnen heute helfen?"
     }
 }
 
@@ -194,13 +200,12 @@ async def send_welcome(message: types.Message):
     lang = get_lang(message)
     t = TRANSLATIONS[lang]
     
-    # القائمة بدون واتساب، مع زر السجل المحاسبي الموثق
     keyboard = InlineKeyboardMarkup(row_width=2)
     keyboard.add(
         InlineKeyboardButton(t["real_estate"], callback_data="real_estate"),
         InlineKeyboardButton(t["cars"], callback_data="cars"),
         InlineKeyboardButton(t["bills"], callback_data="bills_main"),
-        InlineKeyboardButton(t["ledger"], callback_data="view_ledger"),  # زر السجل المحاسبي الفوري
+        InlineKeyboardButton(t["ledger"], callback_data="view_ledger"),
         InlineKeyboardButton(t["services"], callback_data="services"),
         InlineKeyboardButton(t["containers"], callback_data="containers"),
         InlineKeyboardButton(t["sub"], callback_data="sub"),
@@ -209,6 +214,19 @@ async def send_welcome(message: types.Message):
     
     await send_lina_voice(message.chat.id, t["voice_welcome"], lang)
     await message.answer(t["welcome"], reply_markup=keyboard)
+
+# معالج الرسائل النصية الحرة للرد المباشر والفوري بأي لغة دون الحاجة لـ /start
+@dp.message_handler(lambda message: not message.text.startswith('/'))
+async def handle_any_text_message(message: types.Message):
+    user_lang = message.from_user.language_code
+    if user_lang in BLOCKED_COUNTRIES:
+        return
+
+    lang = get_lang(message)
+    t = TRANSLATIONS[lang]
+    
+    # رد فوري ومباشر حسب لغة المستخدم وبدون إطالة
+    await message.answer(t["quick_reply"])
 
 @dp.callback_query_handler(lambda call: True)
 async def process(call: types.CallbackQuery) -> None:
@@ -231,7 +249,6 @@ async def process(call: types.CallbackQuery) -> None:
         )
         return
 
-    # عرض تقرير السجل المحاسبي الرقمي الفوري للشركة
     if call.data == "view_ledger":
         count = len(user_ledger)
         await call.message.answer(
@@ -260,7 +277,6 @@ async def process(call: types.CallbackQuery) -> None:
         }
         b_name = bill_names.get(call.data, "Bill")
         
-        # تسجيل المعاملة محاسبياً آلياً في السجل الرقمي
         if user_id not in user_ledger:
             user_ledger[user_id] = []
         user_ledger[user_id].append(b_name)
