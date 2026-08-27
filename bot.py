@@ -53,54 +53,54 @@ def get_converted_prices():
 
 TRANSLATIONS = {
     "ar": {
-        "welcome": "🟢 <b>YunoChat & PiNebula Engine Active</b>\n\n🔹 نظام الحماية المشفر والذكاء الاصطناعي الأخلاقي يعملان بنجاح.\n🔹 إضاءة نيون فيروزية مفعلة.\n\n✨ <i>اختر الخدمة المطلوبة:</i>",
-        "voice_welcome": "أهلاً بك في نظام وايونو تشات، اختر الخدمة.",
+        "welcome": "🟢 <b>أهلاً بك في بوت لينا الرسمي!</b>\n\n🟢 تم تفعيل نظام رصد الملاحظات والشكاوى الفوري.\n🟢 العملات والأسعار تظهر بالعملات المحلية للعملاء.\n\n✨ <i>اختر الخدمة المطلوبة أدناه:</i>",
+        "voice_welcome": "أهلاً بك في بوت لينا، اختر الخدمة المطلوبة.",
         "blocked": "عذراً، الخدمة غير متاحة في منطقتك.",
-        "real_estate": "🏢 عقارات دولية",
-        "cars": "🚗 قطاع السيارات",
-        "services": "⚡ خدمات عامة",
-        "ledger": "📊 السجل المحاسبي",
-        "containers": "🚢 الشحن والكونتينرات",
-        "support": "📞 الدعم الفني",
-        "feedback": "💬 Ethos Engine (شكاوى وملاحظات)",
-        "sub": "💎 اشتراك VIP ({price})",
-        "web3": "🔮 دفع رقمي Web3 ({price})",
-        "bill_elec": "⚡ فاتورة الكهرباء",
-        "bill_water": "💧 فاتورة المياه",
-        "bill_phone": "📱 فاتورة الاتصالات",
-        "bill_tax": "🚗 ضريبة المركبات",
-        "payment_prompt": "🟢 <b>تأكيد العملية المشفرة:</b>\n\nلقد اخترت: <b>{item}</b>\n\nلإتمام الدفع الآمن عبر البوابة المعتمدة:",
-        "feedback_prompt": "✍️ تفضل، اكتب ملاحظتك أو شكواك لنظام الحماية (Ethos Engine)، وستصل مباشرة إلى إدارتك (كاسم):",
-        "feedback_thanks": "✨ تم إرسال التقرير بنجاح إلى شبكة العقد (Nodes)! شكراً لمساهمتك.",
-        "ledger_report": "📊 <b>سجل العقد (Nodes Ledger):</b>\n\n- العمليات المسجلة: {count}\n- الحالة: موثقة عبر Zero-Knowledge proofs.",
-        "stripe_text": "💳 <b>بوابة الدفع الآمنة (Stripe):</b>\n\n🔗 [اضغط هنا لإتمام الدفع الفوري]({url})",
-        "web3_text": "🪙 <b>تحويل عبر شبكة Polygon (Web3):</b>\n\nأرسل المبلغ إلى العنوان التالي:\n\n`{wallet}`",
-        "quick_reply": "🟢 نظام العمليات السريعة جاهز. اختر الخدمة:"
+        "real_estate": "🟢 عقارات دولية 🟢",
+        "cars": "🟢 قطاع السيارات 🟢",
+        "services": "🟢 خدمات عامة 🟢",
+        "ledger": "🟢 السجل المحاسبي 🟢",
+        "containers": "🟢 الشحن والكونتينرات 🟢",
+        "support": "🟢 الدعم الفني 🟢",
+        "feedback": "🟢 ترك ملاحظة أو شكوى 🟢",
+        "sub": "🟢 اشتراك VIP ({price}) 🟢",
+        "web3": "🟢 دفع رقمي ({price}) 🟢",
+        "bill_elec": "🟢 فاتورة الكهرباء 🟢",
+        "bill_water": "🟢 فاتورة المياه 🟢",
+        "bill_phone": "🟢 فاتورة الاتصالات 🟢",
+        "bill_tax": "🟢 ضريبة المركبات 🟢",
+        "payment_prompt": "🟢 <b>تأكيد العملية:</b>\n\nلقد اخترت: <b>{item}</b>\n\nلإتمام الدفع بشكل آمن، يرجى النقر على الزر أدناه:",
+        "feedback_prompt": "🟢 تفضل يا غالي، اكتب ملاحظتك أو شكواك، وستصل مباشرة إلى الإدارة لنقوم بالمتابعة الفورية:",
+        "feedback_thanks": "🟢 تم إرسال ملاحظتك بنجاح للإدارة! شكراً لمساعدتك.",
+        "ledger_report": "🟢 <b>السجل المحاسبي النظامي:</b>\n\n- الحركات المسجلة: {count}\n- الحالة: موثقة 100%.",
+        "stripe_text": "🟢 <b>بوابة الدفع الآمنة (Stripe):</b>\n\nالسعر متكيف تلقائياً مع عملتك المحلية.\n\n🔗 [اضغط هنا للدفع بالبطاقة]({url})",
+        "web3_text": "🟢 <b>دفع عبر الكريبتو (Web3):</b>\n\nلإتمام الدفع، يرجى تحويل المبلغ المعادل إلى محفظتك:\n\n`{wallet}`",
+        "quick_reply": "🟢 مرحباً بك مجدداً في بوت لينا. اختر إحدى الخدمات:"
     },
     "en": {
-        "welcome": "🟢 <b>YunoChat & PiNebula Engine Active</b>\n\n🔹 Zero-Knowledge cryptographic protection running.\n🔹 Neon Turquoise theme active.\n\n✨ <i>Select a service:</i>",
-        "voice_welcome": "Welcome to Yuno ecosystem, select a service.",
-        "blocked": "Service not available in your region.",
-        "real_estate": "🏢 Real Estate",
-        "cars": "🚗 Automotive",
-        "services": "⚡ General Services",
-        "ledger": "📊 Accounting Ledger",
-        "containers": "🚢 Containers",
-        "support": "📞 Digital Support",
-        "feedback": "💬 Ethos Engine Feedback",
-        "sub": "💎 VIP Sub ({price})",
-        "web3": "🔮 Crypto Web3 ({price})",
-        "bill_elec": "⚡ Electricity",
-        "bill_water": "💧 Water",
-        "bill_phone": "📱 Phone",
-        "bill_tax": "🚗 Car Tax",
-        "payment_prompt": "🟢 <b>Encrypted Payment Confirmation:</b>\n\nSelected: <b>{item}</b>\n\nProceed securely below:",
-        "feedback_prompt": "✍️ Enter your feedback for Ethos Engine. It will be routed directly to management:",
-        "feedback_thanks": "✨ Node report sent successfully! Thank you.",
-        "ledger_report": "📊 <b>Nodes Ledger Report:</b>\n\n- Logged entries: {count}\n- Status: Verified.",
-        "stripe_text": "💳 <b>Secure Checkout (Stripe):</b>\n\n🔗 [Click here to pay]({url})",
-        "web3_text": "🪙 <b>Web3 Polygon Transfer:</b>\n\nSend funds to:\n\n`{wallet}`",
-        "quick_reply": "🟢 Quick access ready. Choose an action:"
+        "welcome": "🟢 <b>Welcome to Lina's Official Bot!</b>\n\n🟢 Live feedback routing active.\n🟢 Multi-currency support enabled.\n\n✨ <i>Please select a service:</i>",
+        "voice_welcome": "Welcome to Lina bot, please choose a service.",
+        "blocked": "Sorry, service not available in your region.",
+        "real_estate": "🟢 Real Estate 🟢",
+        "cars": "🟢 Automotive 🟢",
+        "services": "🟢 General Services 🟢",
+        "ledger": "🟢 Accounting Ledger 🟢",
+        "containers": "🟢 Containers 🟢",
+        "support": "🟢 Digital Support 🟢",
+        "feedback": "🟢 Leave Feedback / Issue 🟢",
+        "sub": "🟢 VIP Sub ({price}) 🟢",
+        "web3": "🟢 Crypto ({price}) 🟢",
+        "bill_elec": "🟢 Electricity 🟢",
+        "bill_water": "🟢 Water 🟢",
+        "bill_phone": "🟢 Phone 🟢",
+        "bill_tax": "🟢 Car Tax 🟢",
+        "payment_prompt": "🟢 <b>Payment Confirmation:</b>\n\nSelected: <b>{item}</b>\n\nTo proceed securely, please click below:",
+        "feedback_prompt": "🟢 Please type your feedback or complaint. It will be sent directly to management:",
+        "feedback_thanks": "🟢 Feedback sent successfully! Thank you.",
+        "ledger_report": "🟢 <b>Ledger Report:</b>\n\n- Logged entries: {count}\n- Status: Verified.",
+        "stripe_text": "🟢 <b>Secure Checkout (Stripe):</b>\n\nPrices dynamically adjusted.\n\n🔗 [Click here to pay]({url})",
+        "web3_text": "🟢 <b>Web3 Crypto Payment:</b>\n\nTransfer the equivalent to your wallet:\n\n`{wallet}`",
+        "quick_reply": "🟢 Welcome back to Lina bot. Choose your next action:"
     }
 }
 
@@ -175,7 +175,7 @@ async def handle_smart_sensor(message: types.Message):
         username = f"@{message.from_user.username}" if message.from_user.username else "بدون معرف"
         
         try:
-            admin_msg = f"🟢 **تقرير Ethos Engine (شكوى/ملاحظة):**\n\n👤 المستخدم: {user_name} ({username})\n🆔 الآيدي: `{user_id}`\n\n💬 المحتوى:\n_{user_text}_"
+            admin_msg = f"🟢 **ملاحظة / شكوى جديدة وردت لبوت لينا:**\n\n👤 الاسم: {user_name} ({username})\n🆔 الآيدي: `{user_id}`\n\n💬 النص:\n_{user_text}_"
             await bot.send_message(ADMIN_CHAT_ID, admin_msg, parse_mode="Markdown")
         except Exception as e:
             logging.error(f"Failed to send feedback to admin: {e}")
