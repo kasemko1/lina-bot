@@ -14,65 +14,60 @@ logging.basicConfig(level=logging.INFO)
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
 
-# قواميس التتبع السياقي والحالات (الحساسات البرمجية)
 user_states = {}
 user_data = {}
-user_ledger = {}  # السجل المحاسبي الرقمي للعمليات
+user_ledger = {}
 
 BLOCKED_COUNTRIES = ["ru", "ir"]
 
 TRANSLATIONS = {
     "ar": {
-        "welcome": "أهلاً وسهلاً! أنا لينا\nرسوم العملية 0.50€ - الاشتراك الشهري €2.99\nنظام محاسبي رقمي موثق للشركات (بدون عمل أسود).\nشو بتحب أساعدك اليوم؟",
-        "voice_welcome": "أهلاً وسهلاً بك، اختر الخدمة المطلوبة أو استعرض سجلك المحاسبي.",
-        "blocked": "عذراً، هذا البوت غير متاح في دولتك بناءً على القيود والحظر الدولي المفروض.",
+        "welcome": "هلا والله! أنا لينا. شو أمورنا اليوم؟ شو حابب نخلص ونسجل؟",
+        "voice_welcome": "هلا فيك، شو الخدمة المطلوبة اليوم؟",
+        "blocked": "عذراً، الخدمة مش شغالة بدلتك.",
         "real_estate": "عقارات",
         "cars": "سيارات",
         "services": "خدمات عامة",
-        "bills": "💳 دفع الفواتير والضرائب",
-        "ledger": "📊 السجل المحاسبي والفواتير",
+        "ledger": "📊 السجل المحاسبي",
         "containers": "كونتينرات",
-        "support": "📞 الدعم الفني الرقمي",
+        "support": "📞 الدعم الفني",
         "sub": "اشتراكي €2.99",
-        "web3": "دفع العملات الرقمية 0.50€",
-        "bills_menu": "💳 **خدمة دفع الفواتير والضرائب الموثقة:**\n\nيرجى اختيار نوع الفاتورة المراد دفعها وسجيلها محاسبياً:",
+        "web3": "دفع كريبتو €0.50",
         "bill_elec": "⚡ فاتورة الكهرباء",
         "bill_water": "💧 فاتورة المياه",
         "bill_phone": "📱 فاتورة الهاتف",
         "bill_tax": "🚗 ضريبة السيارة",
-        "bill_selected": "✅ **تم توثيق طلب دفع {bill_type} رقمياً بنجاح.**\n\nتم تسجيل العملية في السجل المحاسبي للشركة. يرجى إرسال تفاصيل الحساب لاستكمال السداد الآلي.",
-        "ledger_report": "📊 **السجل المحاسبي الرقمي والتقارير:**\n\n- إجمالي المعاملات المسجلة: {count}\n- الحالة القانونية: موثق رقمياً (أبيض 100%)\n- جاهز لاستخراج التقارير الضريبية للشركة.",
-        "web3_voice": "لإتمام الطلب، يرجى دفع رسوم فتح الطلب وقدرها خمسين سنت فقط عبر العملات الرقمية.",
-        "web3_text": "💳 **الدفع عبر العملات الرقمية (Web3):**\n\n📍 **العنوان:** `{wallet}`\n🌐 **الشبكة:** {network}\n💰 **المبلغ المطلوب:** 0.50 USDT\n\nبعد الدفع، يرجى إرسال رقم العملية (Tx Hash) الذي يبدأ بـ (0x...).",
-        "bank_text": "🏦 **الدفع عبر التحويل البنكي أو الآيبان:**\n\n📍 **IBAN:** `{iban}`\n💰 **المبلغ:** 0.50€\n\nيرجى إرسال إيصال التحويل بعد الإتمام.",
-        "selected": "لقد اخترت: **{category}**.\n\nيرجى المتابعة لاختيار طريقة الدفع (اكتب: عملة رقمية، أو تحويل بنكي):",
-        "quick_reply": "أهلاً بك! كيف يمكنني مساعدتك اليوم؟ اختر من الأزرار أدناه:"
+        "payment_prompt": "تمام، اخترت: **{item}**.\n\nخلص، اعطيني طريقة الدفع (اكتب: **عملة رقمية** أو **تحويل بنكي**):",
+        "payment_received_success": "كفو! ✅ وصل الإثبات وتم توثيق ({item}) بالدفتر عنا رسمياً.",
+        "ledger_report": "📊 **السجل المحاسبي:**\n\n- العمليات المسجلة: {count}\n- الوضع تمام وموثق 100%.",
+        "web3_voice": "حول الرسوم المطلوبة عالعنوان لنكمل.",
+        "web3_text": "💳 **الدفع بالكريبتو:**\n\n📍 **العنوان:** `{wallet}`\n🌐 **الشبكة:** {network}\n💰 **المبلغ:** 0.50 USDT\n\nابعثلي رقم العملية (Tx Hash) بعد ما تحول.",
+        "bank_text": "🏦 **التحويل البنكي:**\n\n📍 **IBAN:** `{iban}`\n💰 **المبلغ:** 0.50€\n\nابعثلي الإيصال بعد التحويل.",
+        "quick_reply": "معك، شو عنا شغل تاني؟ اختار من تحت:"
     },
     "en": {
-        "welcome": "Welcome! I am Lina\nOrder Fee €0.50 - Monthly Subscription €2.99\nDigital accounting & automated billing system.\nHow can I help you today?",
-        "voice_welcome": "Welcome, please choose a service or check your ledger.",
-        "blocked": "Sorry, this bot is not available in your country due to international sanctions.",
+        "welcome": "Hey! I'm Lina. What are we working on today?",
+        "voice_welcome": "Hey, what service do you need?",
+        "blocked": "Sorry, not available in your region.",
         "real_estate": "Real Estate",
         "cars": "Cars",
         "services": "General Services",
-        "bills": "💳 Bills & Taxes",
         "ledger": "📊 Accounting Ledger",
         "containers": "Containers",
         "support": "📞 Digital Support",
-        "sub": "Monthly Subscription €2.99",
-        "web3": "Crypto Payment €0.50",
-        "bills_menu": "💳 **Verified Bills & Taxes Service:**\n\nPlease select the type of bill to process:",
-        "bill_elec": "⚡ Electricity Bill",
-        "bill_water": "💧 Water Bill",
-        "bill_phone": "📱 Phone Bill",
+        "sub": "Monthly Sub €2.99",
+        "web3": "Crypto €0.50",
+        "bill_elec": "⚡ Electricity",
+        "bill_water": "💧 Water",
+        "bill_phone": "📱 Phone",
         "bill_tax": "🚗 Car Tax",
-        "bill_selected": "✅ **{bill_type} payment request logged digitally.**\n\nRecorded in the company's ledger.",
-        "ledger_report": "📊 **Digital Accounting Ledger:**\n\n- Total Logged Transactions: {count}\n- Status: Fully Verified (100% White)\n- Ready for tax reports.",
-        "web3_voice": "To complete the order, please pay the opening fee of only fifty cents via cryptocurrencies.",
-        "web3_text": "💳 **Payment via Crypto (Web3):**\n\n📍 **Address:** `{wallet}`\n🌐 **Network:** {network}\n💰 **Amount Required:** 0.50 USDT\n\nAfter payment, please send the transaction hash (Tx Hash) starting with (0x...).",
-        "bank_text": "🏦 **Bank Transfer / IBAN Payment:**\n\n📍 **IBAN:** `{iban}`\n💰 **Amount:** 0.50€\n\nPlease send the receipt after transfer.",
-        "selected": "You have selected: **{category}**.\n\nPlease proceed by choosing the payment method (Type: crypto, or bank transfer):",
-        "quick_reply": "Hello! How can I help you today? Choose from the buttons below:"
+        "payment_prompt": "Got it, selected: **{item}**.\n\nChoose payment (Type: **crypto** or **bank**):",
+        "payment_received_success": "Done! ✅ Payment verified and ({item}) logged successfully.",
+        "ledger_report": "📊 **Ledger:**\n\n- Logged items: {count}\n- All clean and verified.",
+        "web3_voice": "Send the crypto fee to proceed.",
+        "web3_text": "💳 **Crypto Payment:**\n\n📍 **Address:** `{wallet}`\n🌐 **Network:** {network}\n💰 **Amount:** 0.50 USDT\n\nSend Tx Hash after transfer.",
+        "bank_text": "🏦 **Bank Transfer:**\n\n📍 **IBAN:** `{iban}`\n💰 **Amount:** 0.50€\n\nSend receipt after transfer.",
+        "quick_reply": "I'm here. What's next?"
     }
 }
 
@@ -94,6 +89,23 @@ async def send_lina_voice(chat_id, text, lang='ar'):
     except Exception as e:
         logging.error(f"Voice error: {e}")
 
+def get_main_keyboard(t):
+    keyboard = InlineKeyboardMarkup(row_width=2)
+    keyboard.add(
+        InlineKeyboardButton(t["real_estate"], callback_data="real_estate"),
+        InlineKeyboardButton(t["cars"], callback_data="cars"),
+        InlineKeyboardButton(t["bill_elec"], callback_data="bill_elec"),
+        InlineKeyboardButton(t["bill_water"], callback_data="bill_water"),
+        InlineKeyboardButton(t["bill_phone"], callback_data="bill_phone"),
+        InlineKeyboardButton(t["bill_tax"], callback_data="bill_tax"),
+        InlineKeyboardButton(t["ledger"], callback_data="view_ledger"),
+        InlineKeyboardButton(t["services"], callback_data="services"),
+        InlineKeyboardButton(t["containers"], callback_data="containers"),
+        InlineKeyboardButton(t["sub"], callback_data="sub"),
+        InlineKeyboardButton(t["web3"], callback_data="web3")
+    )
+    return keyboard
+
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
     user_id = message.from_user.id
@@ -103,28 +115,13 @@ async def send_welcome(message: types.Message):
         await message.answer(TRANSLATIONS[lang]["blocked"])
         return
 
-    # إعادة ضبط الحالة عند بدء محادثة جديدة
     user_states[user_id] = "main_menu"
-
     lang = get_lang(message)
     t = TRANSLATIONS[lang]
     
-    keyboard = InlineKeyboardMarkup(row_width=2)
-    keyboard.add(
-        InlineKeyboardButton(t["real_estate"], callback_data="real_estate"),
-        InlineKeyboardButton(t["cars"], callback_data="cars"),
-        InlineKeyboardButton(t["bills"], callback_data="bills_main"),
-        InlineKeyboardButton(t["ledger"], callback_data="view_ledger"),
-        InlineKeyboardButton(t["services"], callback_data="services"),
-        InlineKeyboardButton(t["containers"], callback_data="containers"),
-        InlineKeyboardButton(t["sub"], callback_data="sub"),
-        InlineKeyboardButton(t["web3"], callback_data="web3")
-    )
-    
     await send_lina_voice(message.chat.id, t["voice_welcome"], lang)
-    await message.answer(t["welcome"], reply_markup=keyboard)
+    await message.answer(t["welcome"], reply_markup=get_main_keyboard(t))
 
-# معالج الرسائل الذكي المزود بحساسات سياقية تتبع خطوات المستخدم
 @dp.message_handler(lambda message: not message.text.startswith('/'))
 async def handle_smart_sensor(message: types.Message):
     user_id = message.from_user.id
@@ -136,13 +133,11 @@ async def handle_smart_sensor(message: types.Message):
     t = TRANSLATIONS[lang]
     text = message.text.lower()
 
-    # استشعار الحالة الحالية للمستخدم
     current_state = user_states.get(user_id, "main_menu")
 
-    # إذا كان المستخدم في حالة انتظار اختيار طريقة الدفع (مثلاً بعد أن اختار عقارات أو سيارات)
-    if current_state == "waiting_for_payment":
+    if current_state == "waiting_for_payment_method":
         if any(w in text for w in ["عملة", "رقمية", "crypto", "usdt", "كريبتو", "عمله"]):
-            user_states[user_id] = "main_menu"  # إعادة تعيين الحالة
+            user_states[user_id] = "waiting_for_tx_hash"
             await send_lina_voice(message.chat.id, t["web3_voice"], lang)
             await message.answer(
                 t["web3_text"].format(wallet=WEB3_WALLET, network=WEB3_NETWORK),
@@ -150,28 +145,30 @@ async def handle_smart_sensor(message: types.Message):
             )
             return
         elif any(w in text for w in ["تحويل", "بنك", "آيبان", "iban", "bank"]):
-            user_states[user_id] = "main_menu"  # إعادة تعيين الحالة
+            user_states[user_id] = "waiting_for_tx_hash"
             await message.answer(
                 t["bank_text"].format(iban=BANK_IBAN),
                 parse_mode="Markdown",
             )
             return
 
-    # إذا كانت رسالة عادية جداً وليست ضمن سياق انتظار دفع
-    keyboard = InlineKeyboardMarkup(row_width=2)
-    keyboard.add(
-        InlineKeyboardButton(t["real_estate"], callback_data="real_estate"),
-        InlineKeyboardButton(t["cars"], callback_data="cars"),
-        InlineKeyboardButton(t["bills"], callback_data="bills_main"),
-        InlineKeyboardButton(t["ledger"], callback_data="view_ledger"),
-        InlineKeyboardButton(t["services"], callback_data="services"),
-        InlineKeyboardButton(t["containers"], callback_data="containers"),
-        InlineKeyboardButton(t["sub"], callback_data="sub"),
-        InlineKeyboardButton(t["web3"], callback_data="web3")
-    )
-    
+    if current_state == "waiting_for_tx_hash":
+        user_states[user_id] = "main_menu"
+        selected_item = user_data.get(user_id, {}).get("item_name", "الخدمة")
+        
+        if user_id not in user_ledger:
+            user_ledger[user_id] = []
+        user_ledger[user_id].append(selected_item)
+
+        await message.answer(
+            t["payment_received_success"].format(item=selected_item),
+            parse_mode="Markdown"
+        )
+        return
+
+    user_states[user_id] = "main_menu"
     await send_lina_voice(message.chat.id, t["voice_welcome"], lang)
-    await message.answer(t["quick_reply"], reply_markup=keyboard)
+    await message.answer(t["quick_reply"], reply_markup=get_main_keyboard(t))
 
 @dp.callback_query_handler(lambda call: True)
 async def process_callbacks(call: types.CallbackQuery) -> None:
@@ -187,7 +184,8 @@ async def process_callbacks(call: types.CallbackQuery) -> None:
     await call.answer()
 
     if call.data == "web3":
-        user_states[user_id] = "main_menu"
+        user_states[user_id] = "waiting_for_tx_hash"
+        user_data[user_id] = {"item_name": t["web3"]}
         await send_lina_voice(call.message.chat.id, t["web3_voice"], lang)
         await call.message.answer(
             t["web3_text"].format(wallet=WEB3_WALLET, network=WEB3_NETWORK),
@@ -204,43 +202,11 @@ async def process_callbacks(call: types.CallbackQuery) -> None:
         )
         return
 
-    if call.data == "bills_main":
-        user_states[user_id] = "main_menu"
-        bills_keyboard = InlineKeyboardMarkup(row_width=2)
-        bills_keyboard.add(
-            InlineKeyboardButton(t["bill_elec"], callback_data="bill_elec"),
-            InlineKeyboardButton(t["bill_water"], callback_data="bill_water"),
-            InlineKeyboardButton(t["bill_phone"], callback_data="bill_phone"),
-            InlineKeyboardButton(t["bill_tax"], callback_data="bill_tax")
-        )
-        await call.message.answer(t["bills_menu"], reply_markup=bills_keyboard, parse_mode="Markdown")
-        return
-
-    if call.data.startswith("bill_"):
-        user_states[user_id] = "main_menu"
-        bill_names = {
-            "bill_elec": t["bill_elec"],
-            "bill_water": t["bill_water"],
-            "bill_phone": t["bill_phone"],
-            "bill_tax": t["bill_tax"]
-        }
-        b_name = bill_names.get(call.data, "Bill")
-        
-        if user_id not in user_ledger:
-            user_ledger[user_id] = []
-        user_ledger[user_id].append(b_name)
-
-        await call.message.answer(
-            t["bill_selected"].format(bill_type=b_name),
-            parse_mode="Markdown"
-        )
-        return
-
-    # عندما يختار المستخدم قسماً (مثل عقارات، سيارات، إلخ)
-    user_data[user_id] = {"type": call.data}
-    user_states[user_id] = "waiting_for_payment"  # تعيين الحساس السياقي بانتظار طريقة الدفع
-    
-    category_names = {
+    item_names = {
+        "bill_elec": t["bill_elec"],
+        "bill_water": t["bill_water"],
+        "bill_phone": t["bill_phone"],
+        "bill_tax": t["bill_tax"],
         "real_estate": t["real_estate"],
         "cars": t["cars"],
         "services": t["services"],
@@ -248,10 +214,13 @@ async def process_callbacks(call: types.CallbackQuery) -> None:
         "sub": t["sub"]
     }
     
-    cat_name = category_names.get(call.data, "Section")
+    item_name = item_names.get(call.data, "Service")
+    
+    user_data[user_id] = {"item_name": item_name}
+    user_states[user_id] = "waiting_for_payment_method"
 
     await call.message.answer(
-        t["selected"].format(category=cat_name),
+        t["payment_prompt"].format(item=item_name),
         parse_mode="Markdown"
     )
 
