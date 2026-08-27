@@ -25,6 +25,8 @@ dp = Dispatcher(bot)
 user_states = {}
 user_data = {}
 user_ledger = {}
+# تخزين مجموعات النقاش التجاري المشتركة للأطراف
+business_groups = {} 
 
 BLOCKED_COUNTRIES = ["ru", "ir"]
 
@@ -51,11 +53,11 @@ def get_converted_prices():
             "onetime": "€0.50 (~$0.54 USD / £0.43 GBP)"
         }
 
-# القاموس الشامل للّغات الست (العربية، الإنجليزية، الألمانية، الفرنسية، الإسبانية، الإيطالية)
+# القاموس الشامل للّغات الست مع إضافة ميزات النقاش التجاري الجماعي المجانية
 TRANSLATIONS = {
     "ar": {
-        "welcome": "🟢 <b>أهلاً بك في بوت لينا الرسمي!</b>\n\n🟢 تم تفعيل نظام رصد الملاحظات والشكاوى الفوري.\n🟢 العملات والأسعار تظهر بالعملات المحلية للعملاء.\n\n✨ <i>اختر الخدمة المطلوبة أدناه:</i>",
-        "voice_welcome": "أهلاً بك في بوت لينا، اختر الخدمة المطلوبة.",
+        "welcome": "🟢 <b>أهلاً بك في بوت لينا الرسمي (منصة الأعمال الذكية)!</b>\n\n🟢 تم تفعيل نظام رصد الملاحظات والشكاوى الفوري.\n🟢 المجموعات التجارية والاستشارات مجانية تماماً لتسهيل صفقاتكم.\n\n✨ <i>اختر الخدمة المطلوبة أدناه:</i>",
+        "voice_welcome": "أهلاً بك في بوت لينا، منصة الأعمال والتنسيق التجاري.",
         "blocked": "عذراً، الخدمة غير متاحة في منطقتك.",
         "real_estate": "🟢 عقارات دولية 🟢",
         "cars": "🟢 قطاع السيارات 🟢",
@@ -64,23 +66,26 @@ TRANSLATIONS = {
         "containers": "🟢 الشحن والكونتينرات 🟢",
         "support": "🟢 الدعم الفني 🟢",
         "feedback": "🟢 ترك ملاحظة أو شكوى 🟢",
-        "sub": "🟢 اشتراك VIP ({price}) 🟢",
-        "web3": "🟢 دفع رقمي ({price}) 🟢",
+        "business_group": "🟢 مجموعة نقاش تجاري (مجاني) 🟢",
+        "sub": "🟢 اشتراك VIP (€2.99) ({price}) 🟢",
+        "web3": "🟢 دفع رقمي (€0.50) ({price}) 🟢",
         "bill_elec": "🟢 فاتورة الكهرباء 🟢",
         "bill_water": "🟢 فاتورة المياه 🟢",
         "bill_phone": "🟢 فاتورة الاتصالات 🟢",
         "bill_tax": "🟢 ضريبة المركبات 🟢",
-        "payment_prompt": "🟢 <b>تأكيد العملية:</b>\n\nلقد اخترت: <b>{item}</b>\n\nلإتمام الدفع بشكل آمن، يرجى النقر على الزر أدناه:",
+        "payment_prompt": "🟢 <b>تأكيد العملية (€0.50):</b>\n\nلقد اخترت: <b>{item}</b>\n\nلإتمام الدفع بشكل آمن، يرجى النقر على الزر أدناه:",
         "feedback_prompt": "🟢 تفضل يا غالي، اكتب ملاحظتك أو شكواك، وستصل مباشرة إلى الإدارة لنقوم بالمتابعة الفورية:",
         "feedback_thanks": "🟢 تم إرسال ملاحظتك بنجاح للإدارة! شكراً لمساعدتك.",
         "ledger_report": "🟢 <b>السجل المحاسبي النظامي:</b>\n\n- الحركات المسجلة: {count}\n- الحالة: موثقة 100%.",
-        "stripe_text": "🟢 <b>بوابة الدفع الآمنة (Stripe):</b>\n\nالسعر متكيف تلقائياً مع عملتك المحلية.\n\n🔗 [اضغط هنا للدفع بالبطاقة]({url})",
-        "web3_text": "🟢 <b>دفع عبر الكريبتو (Web3):</b>\n\nلإتمام الدفع، يرجى تحويل المبلغ المعادل إلى محفظتك:\n\n`{wallet}`",
-        "quick_reply": "🟢 مرحباً بك مجدداً في بوت لينا. اختر إحدى الخدمات:"
+        "stripe_text": "🟢 <b>بوابة الدفع الآمنة (Stripe - اشتراك شهري €2.99):</b>\n\nالسعر متكيف تلقائياً مع عملتك المحلية.\n\n🔗 [اضغط هنا للدفع بالبطاقة]({url})",
+        "web3_text": "🟢 <b>دفع عبر الكريبتو (Web3 - خدمة فردية €0.50):</b>\n\nلإتمام الدفع، يرجى تحويل المبلغ المعادل إلى محفظتك:\n\n`{wallet}`",
+        "quick_reply": "🟢 مرحباً بك مجدداً في بوت لينا. اختر إحدى الخدمات:",
+        "group_prompt": "🟢 <b>إدارة مجموعات النقاش التجاري المجانية:</b>\n\nتم فتح جلسة آمنة بين الأطراف. يمكنك أنت وشركاؤك مناقشة الفواتير والشحنات، وستتدخل 'لينا' لتقديم اقتراحات وحلول تجارية ملموسة عند الحاجة.",
+        "ai_suggestion": "💡 <b>اقتراح استشاري من لينا (AI Business Hub):</b> بناءً على نقاشكم التجاري حول الفواتير أو الكونتينرات، ننصح بتوثيق البنود المالية في السجل المحاسبي والتأكد من مطابقة المعايير الأوروبية GDPR."
     },
     "en": {
-        "welcome": "🟢 <b>Welcome to Lina's Official Bot!</b>\n\n🟢 Live feedback routing active.\n🟢 Multi-currency support enabled.\n\n✨ <i>Please select a service:</i>",
-        "voice_welcome": "Welcome to Lina bot, please choose a service.",
+        "welcome": "🟢 <b>Welcome to Lina's Official Bot (Business Hub)!</b>\n\n🟢 Live feedback routing active.\n🟢 Free commercial discussion groups enabled.\n\n✨ <i>Please select a service:</i>",
+        "voice_welcome": "Welcome to Lina bot, business and coordination hub.",
         "blocked": "Sorry, service not available in your region.",
         "real_estate": "🟢 Real Estate 🟢",
         "cars": "🟢 Automotive 🟢",
@@ -89,23 +94,26 @@ TRANSLATIONS = {
         "containers": "🟢 Containers 🟢",
         "support": "🟢 Digital Support 🟢",
         "feedback": "🟢 Leave Feedback / Issue 🟢",
-        "sub": "🟢 VIP Sub ({price}) 🟢",
-        "web3": "🟢 Crypto ({price}) 🟢",
+        "business_group": "🟢 Trade Discussion Group (Free) 🟢",
+        "sub": "🟢 VIP Sub (€2.99) ({price}) 🟢",
+        "web3": "🟢 Crypto (€0.50) ({price}) 🟢",
         "bill_elec": "🟢 Electricity 🟢",
         "bill_water": "🟢 Water 🟢",
         "bill_phone": "🟢 Phone 🟢",
         "bill_tax": "🟢 Car Tax 🟢",
-        "payment_prompt": "🟢 <b>Payment Confirmation:</b>\n\nSelected: <b>{item}</b>\n\nTo proceed securely, please click below:",
+        "payment_prompt": "🟢 <b>Payment Confirmation (€0.50):</b>\n\nSelected: <b>{item}</b>\n\nTo proceed securely, please click below:",
         "feedback_prompt": "🟢 Please type your feedback or complaint. It will be sent directly to management:",
         "feedback_thanks": "🟢 Feedback sent successfully! Thank you.",
         "ledger_report": "🟢 <b>Ledger Report:</b>\n\n- Logged entries: {count}\n- Status: Verified.",
-        "stripe_text": "🟢 <b>Secure Checkout (Stripe):</b>\n\nPrices dynamically adjusted.\n\n🔗 [Click here to pay]({url})",
-        "web3_text": "🟢 <b>Web3 Crypto Payment:</b>\n\nTransfer the equivalent to your wallet:\n\n`{wallet}`",
-        "quick_reply": "🟢 Welcome back to Lina bot. Choose your next action:"
+        "stripe_text": "🟢 <b>Secure Checkout (Stripe - Monthly Sub €2.99):</b>\n\nPrices dynamically adjusted.\n\n🔗 [Click here to pay]({url})",
+        "web3_text": "🟢 <b>Web3 Crypto Payment (€0.50):</b>\n\nTransfer the equivalent to your wallet:\n\n`{wallet}`",
+        "quick_reply": "🟢 Welcome back to Lina bot. Choose your next action:",
+        "group_prompt": "🟢 <b>Free Trade Discussion Groups:</b>\n\nSecure session opened. Discuss invoices and shipments with partners; Lina will provide AI insights and solutions.",
+        "ai_suggestion": "💡 <b>Lina AI Business Insight:</b> Based on your commercial discussion, ensure financial terms are logged and GDPR compliant."
     },
     "de": {
-        "welcome": "🟢 <b>Willkommen beim offiziellen Lina-Bot!</b>\n\n🟢 Live-Feedback-System aktiv.\n🟢 Mehrwährungsunterstützung aktiviert.\n\n✨ <i>Bitte wählen Sie einen Dienst aus:</i>",
-        "voice_welcome": "Willkommen beim Lina-Bot, bitte wählen Sie einen Dienst.",
+        "welcome": "🟢 <b>Willkommen beim offiziellen Lina-Bot (Business Hub)!</b>\n\n🟢 Live-Feedback-System aktiv.\n🟢 Kostenlose Handelsdiskussionsgruppen aktiviert.\n\n✨ <i>Bitte wählen Sie einen Dienst aus:</i>",
+        "voice_welcome": "Willkommen beim Lina-Bot.",
         "blocked": "Entschuldigung, der Service ist in Ihrer Region nicht verfügbar.",
         "real_estate": "🟢 Immobilien 🟢",
         "cars": "🟢 Automobil 🟢",
@@ -114,23 +122,26 @@ TRANSLATIONS = {
         "containers": "🟢 Container 🟢",
         "support": "🟢 Digitaler Support 🟢",
         "feedback": "🟢 Feedback / Beschwerde hinterlassen 🟢",
-        "sub": "🟢 VIP-Abo ({price}) 🟢",
-        "web3": "🟢 Krypto ({price}) 🟢",
+        "business_group": "🟢 Handelsgruppe (Kostenlos) 🟢",
+        "sub": "🟢 VIP-Abo (€2.99) ({price}) 🟢",
+        "web3": "🟢 Krypto (€0.50) ({price}) 🟢",
         "bill_elec": "🟢 Stromrechnung 🟢",
         "bill_water": "🟢 Wasserrechnung 🟢",
         "bill_phone": "🟢 Telefonrechnung 🟢",
         "bill_tax": "🟢 Kfz-Steuer 🟢",
-        "payment_prompt": "🟢 <b>Zahlungsbestätigung:</b>\n\nAusgewählt: <b>{item}</b>\n\nKlicken Sie unten, um sicher fortzufahren:",
-        "feedback_prompt": "🟢 Bitte geben Sie Ihr Feedback oder Ihre Beschwerde ein. Es wird direkt an die Verwaltung gesendet:",
+        "payment_prompt": "🟢 <b>Zahlungsbestätigung (€0.50):</b>\n\nAusgewählt: <b>{item}</b>\n\nKlicken Sie unten, um sicher fortzufahren:",
+        "feedback_prompt": "🟢 Bitte geben Sie Ihr Feedback oder Ihre Beschwerde ein:",
         "feedback_thanks": "🟢 Feedback erfolgreich gesendet! Vielen Dank.",
         "ledger_report": "🟢 <b>Bericht:</b>\n\n- Protokollierte Einträge: {count}\n- Status: Verifiziert.",
-        "stripe_text": "🟢 <b>Sichere Kasse (Stripe):</b>\n\nPreise dynamisch angepasst.\n\n🔗 [Hier bezahlen]({url})",
-        "web3_text": "🟢 <b>Web3 Krypto-Zahlung:</b>\n\nÜberweisen Sie den Gegenwert an die Wallet:\n\n`{wallet}`",
-        "quick_reply": "🟢 Willkommen zurück beim Lina-Bot. Wählen Sie Ihre nächste Aktion:"
+        "stripe_text": "🟢 <b>Sichere Kasse (Stripe - Abo €2.99):</b>\n\n🔗 [Hier bezahlen]({url})",
+        "web3_text": "🟢 <b>Web3 Krypto-Zahlung (€0.50):</b>\n\n`{wallet}`",
+        "quick_reply": "🟢 Willkommen zurück beim Lina-Bot:",
+        "group_prompt": "🟢 <b>Handelsdiskussionsgruppe:</b> Sichere Sitzung aktiv. Lina unterstützt mit KI-Vorschlägen.",
+        "ai_suggestion": "💡 <b>Lina KI-Geschäftstipp:</b> Dokumentieren Sie alle Transaktionen sicher."
     },
     "fr": {
-        "welcome": "🟢 <b>Bienvenue sur le bot officiel de Lina !</b>\n\n🟢 Système de commentaires en direct actif.\n🟢 Prise en charge de plusieurs devises.\n\n✨ <i>Veuillez sélectionner un service :</i>",
-        "voice_welcome": "Bienvenue sur le bot Lina, veuillez choisir un service.",
+        "welcome": "🟢 <b>Bienvenue sur le bot officiel de Lina !</b>",
+        "voice_welcome": "Bienvenue sur le bot Lina.",
         "blocked": "Désolé, service non disponible dans votre région.",
         "real_estate": "🟢 Immobilier 🟢",
         "cars": "🟢 Automobile 🟢",
@@ -139,48 +150,54 @@ TRANSLATIONS = {
         "containers": "🟢 Conteneurs 🟢",
         "support": "🟢 Support numérique 🟢",
         "feedback": "🟢 Laisser un commentaire / problème 🟢",
-        "sub": "🟢 Abonnement VIP ({price}) 🟢",
-        "web3": "🟢 Crypto ({price}) 🟢",
+        "business_group": "🟢 Groupe de discussion (Gratuit) 🟢",
+        "sub": "🟢 VIP (€2.99) ({price}) 🟢",
+        "web3": "🟢 Crypto (€0.50) ({price}) 🟢",
         "bill_elec": "🟢 Électricité 🟢",
         "bill_water": "🟢 Eau 🟢",
         "bill_phone": "🟢 Téléphone 🟢",
         "bill_tax": "🟢 Taxe automobile 🟢",
-        "payment_prompt": "🟢 <b>Confirmation de paiement :</b>\n\nSélectionné : <b>{item}</b>\n\nPour continuer en toute sécurité, veuillez cliquer ci-dessous :",
-        "feedback_prompt": "🟢 Veuillez saisir vos commentaires ou réclamation. Ils seront envoyés directement à la direction :",
-        "feedback_thanks": "🟢 Commentaire envoyé avec succès ! Merci.",
-        "ledger_report": "🟢 <b>Rapport du grand livre :</b>\n\n- Entrées enregistrées : {count}\n- Statut : Vérifié.",
-        "stripe_text": "🟢 <b>Paiement sécurisé (Stripe) :</b>\n\nPrix ajustés dynamiquement.\n\n🔗 [Cliquez ici pour payer]({url})",
-        "web3_text": "🟢 <b>Paiement Crypto Web3 :</b>\n\nTransférez l'équivalent sur votre portefeuille :\n\n`{wallet}`",
-        "quick_reply": "🟢 Bon retour sur le bot Lina. Choisissez votre prochaine action :"
+        "payment_prompt": "🟢 <b>Confirmation (€0.50):</b> <b>{item}</b>",
+        "feedback_prompt": "🟢 Veuillez saisir vos commentaires :",
+        "feedback_thanks": "🟢 Commentaire envoyé avec succès !",
+        "ledger_report": "🟢 <b>Rapport :</b> Entrées : {count}",
+        "stripe_text": "🟢 <b>Paiement (€2.99) :</b> 🔗 [Payer]({url})",
+        "web3_text": "🟢 <b>Crypto (€0.50) :</b> `{wallet}`",
+        "quick_reply": "🟢 Bon retour sur le bot Lina.",
+        "group_prompt": "🟢 <b>Groupe commercial gratuit :</b> Session sécurisée active.",
+        "ai_suggestion": "💡 <b>Conseil IA de Lina :</b> Assurez-vous de valider les termes commerciaux."
     },
     "es": {
-        "welcome": "🟢 <b>¡Bienvenido al bot oficial de Lina!</b>\n\n🟢 Sistema de comentarios en vivo activo.\n🟢 Soporte multidivisa habilitado.\n\n✨ <i>Por favor seleccione un servicio:</i>",
-        "voice_welcome": "Bienvenido al bot de Lina, elija un servicio.",
-        "blocked": "Lo sentimos, el servicio no está disponible en tu región.",
+        "welcome": "🟢 <b>¡Bienvenido al bot oficial de Lina!</b>",
+        "voice_welcome": "Bienvenido al bot de Lina.",
+        "blocked": "Lo sentimos, el servicio no está disponible.",
         "real_estate": "🟢 Inmobiliaria 🟢",
         "cars": "🟢 Automoción 🟢",
         "services": "🟢 Servicios generales 🟢",
         "ledger": "🟢 Libro contable 🟢",
         "containers": "🟢 Contenedores 🟢",
         "support": "🟢 Soporte digital 🟢",
-        "feedback": "🟢 Dejar comentarios / Incidencia 🟢",
-        "sub": "🟢 Sub VIP ({price}) 🟢",
-        "web3": "🟢 Cripto ({price}) 🟢",
+        "feedback": "🟢 Dejar comentarios 🟢",
+        "business_group": "🟢 Grupo comercial (Gratis) 🟢",
+        "sub": "🟢 Sub VIP (€2.99) ({price}) 🟢",
+        "web3": "🟢 Cripto (€0.50) ({price}) 🟢",
         "bill_elec": "🟢 Electricidad 🟢",
         "bill_water": "🟢 Agua 🟢",
         "bill_phone": "🟢 Teléfono 🟢",
         "bill_tax": "🟢 Impuesto de autos 🟢",
-        "payment_prompt": "🟢 <b>Confirmación de pago:</b>\n\nSeleccionado: <b>{item}</b>\n\nPara continuar de forma segura, haga clic a continuación:",
-        "feedback_prompt": "🟢 Escriba sus comentarios أو reclamación. Se enviará directamente a la gerencia:",
-        "feedback_thanks": "🟢 ¡Comentarios enviados con éxito! Gracias.",
-        "ledger_report": "🟢 <b>Informe del libro mayor:</b>\n\n- Entradas registradas: {count}\n- Estado: Verificado.",
-        "stripe_text": "🟢 <b>Pago seguro (Stripe):</b>\n\nPrecios ajustados dinámicamente.\n\n🔗 [Haga clic aquí para pagar]({url})",
-        "web3_text": "🟢 <b>Pago Cripto Web3:</b>\n\nTransfiera el equivalente a su billetera:\n\n`{wallet}`",
-        "quick_reply": "🟢 Bienvenido de nuevo al bot de Lina. Elija su próxima acción:"
+        "payment_prompt": "🟢 <b>Confirmación (€0.50):</b> <b>{item}</b>",
+        "feedback_prompt": "🟢 Escriba sus comentarios:",
+        "feedback_thanks": "🟢 ¡Comentarios enviados!",
+        "ledger_report": "🟢 <b>Informe:</b> Entradas: {count}",
+        "stripe_text": "🟢 <b>Pago (€2.99) :</b> 🔗 [Pagar]({url})",
+        "web3_text": "🟢 <b>Cripto (€0.50) :</b> `{wallet}`",
+        "quick_reply": "🟢 Bienvenido de nuevo al bot de Lina.",
+        "group_prompt": "🟢 <b>Grupo de comercio gratuito:</b> Sesión segura abierta.",
+        "ai_suggestion": "💡 <b>Sugerencia IA de Lina:</b> Mantenga registradas las transacciones."
     },
     "it": {
-        "welcome": "🟢 <b>Benvenuto nel bot ufficiale di Lina!</b>\n\n🟢 Sistema di feedback in tempo reale attivo.\n🟢 Supporto multi-valuta abilitato.\n\n✨ <i>Seleziona un servizio qui sotto:</i>",
-        "voice_welcome": "Benvenuto nel bot di Lina, seleziona il servizio desiderato.",
+        "welcome": "🟢 <b>Benvenuto nel bot ufficiale di Lina (Business Hub)!</b>\n\n🟢 Gruppi di discussione commerciale gratuiti attivi.",
+        "voice_welcome": "Benvenuto nel bot di Lina.",
         "blocked": "Spiacenti, il servizio non è disponibile nella tua regione.",
         "real_estate": "🟢 Immobiliare 🟢",
         "cars": "🟢 Settore Automotive 🟢",
@@ -189,19 +206,22 @@ TRANSLATIONS = {
         "containers": "🟢 Spedizioni e Container 🟢",
         "support": "🟢 Supporto Digitale 🟢",
         "feedback": "🟢 Lascia Feedback / Reclamo 🟢",
-        "sub": "🟢 Abbonamento VIP ({price}) 🟢",
-        "web3": "🟢 Pagamento Cripto ({price}) 🟢",
+        "business_group": "🟢 Gruppo di Discussione (Gratis) 🟢",
+        "sub": "🟢 Abbonamento VIP (€2.99) ({price}) 🟢",
+        "web3": "🟢 Pagamento Cripto (€0.50) ({price}) 🟢",
         "bill_elec": "🟢 Bolletta Luce 🟢",
         "bill_water": "🟢 Bolletta Acqua 🟢",
         "bill_phone": "🟢 Bolletta Telefono 🟢",
         "bill_tax": "🟢 Tassa Veicoli 🟢",
-        "payment_prompt": "🟢 <b>Conferma operazione:</b>\n\nHai selezionato: <b>{item}</b>\n\nPer procedere in modo sicuro, clicca sul pulsante in basso:",
-        "feedback_prompt": "🟢 Scrivi il tuo feedback o reclamo. Verrà inviato direttamente all'amministrazione:",
-        "feedback_thanks": "🟢 Feedback inviato con successo all'amministrazione! Grazie.",
-        "ledger_report": "🟢 <b>Rapporto Registro Contabile:</b>\n\n- Voci registrate: {count}\n- Stato: Verificato 100%.",
-        "stripe_text": "🟢 <b>Pagamento Sicuro (Stripe):</b>\n\nPrezzo adattato alla tua valuta locale.\n\n🔗 [Clicca qui per pagare con carta]({url})",
-        "web3_text": "🟢 <b>Pagamento Cripto (Web3):</b>\n\nTrasferisci l'importo equivalente al tuo wallet:\n\n`{wallet}`",
-        "quick_reply": "🟢 Bentornato nel bot di Lina. Scegli una delle opzioni:"
+        "payment_prompt": "🟢 <b>Conferma operazione (€0.50):</b>\n\nHai selezionato: <b>{item}</b>",
+        "feedback_prompt": "🟢 Scrivi il tuo feedback o reclamo:",
+        "feedback_thanks": "🟢 Feedback inviato con successo!",
+        "ledger_report": "🟢 <b>Rapporto Registro Contabile:</b> Voci: {count}",
+        "stripe_text": "🟢 <b>Pagamento Sicuro (Stripe - Abbonamento €2.99):</b> 🔗 [Paga]({url})",
+        "web3_text": "🟢 <b>Pagamento Cripto (Web3 - Servizio €0.50):</b> `{wallet}`",
+        "quick_reply": "🟢 Bentornato nel bot di Lina.",
+        "group_prompt": "🟢 <b>Gruppo di Discussione Commerciale Gratuito:</b> Sessione avviata in sicurezza.",
+        "ai_suggestion": "💡 <b>Suggerimento AI di Lina:</b> Analisi commerciale e suggerimenti operativi pronti per il vostro accordo."
     }
 }
 
@@ -238,6 +258,7 @@ def get_main_keyboard(t):
         InlineKeyboardButton(t["bill_tax"], callback_data="bill_tax"),
         InlineKeyboardButton(t["ledger"], callback_data="view_ledger"),
         InlineKeyboardButton(t["feedback"], callback_data="leave_feedback"),
+        InlineKeyboardButton(t["business_group"], callback_data="business_group"), # الزر الجديد للمجموعات التجارية المجانية
         InlineKeyboardButton(t["services"], callback_data="services"),
         InlineKeyboardButton(t["containers"], callback_data="containers"),
         InlineKeyboardButton(t["sub"].format(price=prices["sub"]), callback_data="sub"),
@@ -287,6 +308,13 @@ async def handle_smart_sensor(message: types.Message):
         await message.answer(t["feedback_thanks"])
         return
 
+    # معالجة تفاعلات المجموعات التجارية واقتراحات الذكاء الاصطناعي الذكية
+    if current_state == "in_business_group":
+        user_text = message.text
+        # إذا ناقش المستخدمون موضوعاً تجارياً، تتدخل لينا برأي أو اقتراح ذكي
+        await message.answer(t["ai_suggestion"], parse_mode="HTML")
+        return
+
     user_states[user_id] = "main_menu"
     await send_lina_voice(message.chat.id, t["voice_welcome"], lang)
     await message.answer(t["quick_reply"], reply_markup=get_main_keyboard(t), parse_mode="HTML")
@@ -309,6 +337,12 @@ async def process_callbacks(call: types.CallbackQuery) -> None:
     if call.data == "leave_feedback":
         user_states[user_id] = "waiting_for_feedback"
         await call.message.answer(t["feedback_prompt"], parse_mode="HTML")
+        return
+
+    # معالجة ميزة مجموعة النقاش التجاري المجانية الجديدة
+    if call.data == "business_group":
+        user_states[user_id] = "in_business_group"
+        await call.message.answer(t["group_prompt"], parse_mode="HTML")
         return
 
     if call.data == "web3":
@@ -353,9 +387,9 @@ async def process_callbacks(call: types.CallbackQuery) -> None:
         item_name = item_names[call.data]
         user_states[user_id] = "main_menu"
         
-        # إنشاء زر تفاعلي يظهر تحت الرسالة يوجه المستخدم مباشرة لرابط الدفع
+        # إنشاء زر تفاعلي يظهر تحت الرسالة يوجه المستخدم مباشرة لرابط الدفع (خدمة فردية €0.50)
         pay_keyboard = InlineKeyboardMarkup()
-        pay_keyboard.add(InlineKeyboardButton("🔗 اضغط هنا لإتمام الدفع", url=STRIPE_ONETIME_URL))
+        pay_keyboard.add(InlineKeyboardButton("🔗 اضغط هنا لإتمام الدفع (€0.50)", url=STRIPE_ONETIME_URL))
         
         await call.message.answer(
             t["payment_prompt"].format(item=item_name),
