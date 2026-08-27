@@ -5,8 +5,13 @@ from gtts import gTTS
 import os
 
 API_TOKEN = os.getenv("BOT_TOKEN")
-# رابط بوابة الدفع الآمنة (Stripe Checkout) المعتمد قانونياً
-STRIPE_PAYMENT_URL = os.getenv("STRIPE_PAYMENT_URL", "https://buy.stripe.com/your_secure_checkout_link")
+
+# روابط Stripe الرسمية الخاصة بك
+STRIPE_SUB_URL = "https://buy.stripe.com/eVq9AS98hfsZ7Hu3LadZ600"       # اشتراك شهري (€2.99)
+STRIPE_ONETIME_URL = "https://buy.stripe.com/evq8w03NXbcJ9PC3LadZ601" # خدمة فردية (€0.50)
+
+# عنوان محفظة ميتا ماسك الخاصة بك (Polygon/Web3)
+METAMASK_WALLET_ADDRESS = "0x0e3c35B1242dB3f7E60E554266eB7be90706f355"
 
 logging.basicConfig(level=logging.INFO)
 
@@ -21,7 +26,7 @@ BLOCKED_COUNTRIES = ["ru", "ir"]
 
 TRANSLATIONS = {
     "ar": {
-        "welcome": "هلا والله! أنا لينا. شو أمورنا اليوم؟ شو حابب نخلص ونسجل؟",
+        "welcome": "هلا والله يا كاسم! أنا لينا. شو أمورنا اليوم؟ شو حابب نخلص ونسجل؟",
         "voice_welcome": "هلا فيك، شو الخدمة المطلوبة اليوم؟",
         "blocked": "عذراً، الخدمة مش شغالة بدلتك.",
         "real_estate": "عقارات",
@@ -36,14 +41,15 @@ TRANSLATIONS = {
         "bill_water": "💧 فاتورة المياه",
         "bill_phone": "📱 فاتورة الهاتف",
         "bill_tax": "🚗 ضريبة السيارة",
-        "payment_prompt": "تمام، اخترت: **{item}**.\n\nلإتمام الدفع بشكل قانوني وآمن عبر بوابة الدفع الإلكترونية المعتمدة، يرجى الضغط على الزر أدناه لإتمام المعاملة أوتوماتيكياً:",
-        "payment_received_success": "كفو! ✅ تم التحقق من الدفع عبر البوابة الآمنة وتوثيق ({item}) بالدفتر عنا رسمياً.",
-        "ledger_report": "📊 **السجل المحاسبي:**\n\n- العمليات المسجلة: {count}\n- الوضع تمام وموثق 100% ضمن القوانين.",
-        "stripe_text": "💳 **بوابة الدفع الإلكتروني الآمنة (Stripe):**\n\nاضغط على الرابط أدناه لإتمام الدفع بالبطاقة البنكية بشكل آمن 100% ومطابق للقوانين الأوروبية:\n\n🔗 [اضغط هنا للدفع الآمن]({url})\n\nبعد إتمام الدفع، سيتم تسجيل العملية وتحديث حسابك تلقائياً.",
+        "payment_prompt": "تمام، اخترت: **{item}**.\n\nلإتمام الدفع بشكل قانوني وآمن عبر بوابة الدفع الإلكترونية، يرجى الضغط على الزر أدناه:",
+        "payment_received_success": "كفو! ✅ تم التحقق من الدفع وتوثيق ({item}) بالدفتر عنا رسمياً.",
+        "ledger_report": "📊 **السجل المحاسبي:**\n\n- العمليات المسجلة: {count}\n- الوضع تمام وموثق 100%.",
+        "stripe_text": "💳 **بوابة الدفع الإلكتروني الآمنة (Stripe):**\n\nاضغط على الرابط أدناه لإتمام الدفع بالبطاقة البنكية بشكل آمن ومطابق للقوانين:\n\n🔗 [اضغط هنا للدفع بالبطاقة]({url})\n\nبعد إتمام الدفع، سيتم تسجيل العملية وتحديث حسابك تلقائياً.",
+        "web3_text": "🪙 **دفع عبر Web3 (كريبتو):**\n\nلإتمام الدفع، يرجى تحويل المبلغ مباشرة إلى عنوان محفظتك في ميتا ماسك على شبكة Polygon:\n\n`{wallet}`\n\n*(تأكد من إرسال المبلغ الصحيح للعنوان أعلاه)*",
         "quick_reply": "معك، شو عنا شغل تاني؟ اختار من تحت:"
     },
     "en": {
-        "welcome": "Hey! I'm Lina. What are we working on today?",
+        "welcome": "Hey Kassem! I'm Lina. What are we working on today?",
         "voice_welcome": "Hey, what service do you need?",
         "blocked": "Sorry, not available in your region.",
         "real_estate": "Real Estate",
@@ -59,9 +65,10 @@ TRANSLATIONS = {
         "bill_phone": "📱 Phone",
         "bill_tax": "🚗 Car Tax",
         "payment_prompt": "Got it, selected: **{item}**.\n\nTo pay securely via our certified payment gateway, please click the button below:",
-        "payment_received_success": "Done! ✅ Payment verified via secure gateway and ({item}) logged successfully.",
+        "payment_received_success": "Done! ✅ Payment verified and ({item}) logged successfully.",
         "ledger_report": "📊 **Ledger:**\n\n- Logged items: {count}\n- All clean and compliant.",
-        "stripe_text": "💳 **Secure Payment Gateway (Stripe):**\n\nClick the link below to pay securely with your card, fully compliant with EU regulations:\n\n🔗 [Click here for Secure Checkout]({url})\n\nOnce paid, your transaction will be logged automatically.",
+        "stripe_text": "💳 **Secure Payment Gateway (Stripe):**\n\nClick the link below to pay securely with your card:\n\n🔗 [Click here for Secure Checkout]({url})\n\nOnce paid, your transaction will be logged automatically.",
+        "web3_text": "🪙 **Web3 Crypto Payment:**\n\nTo pay, please send the funds directly to your MetaMask wallet address below (Polygon/EVM):\n\n`{wallet}`",
         "quick_reply": "I'm here. What's next?"
     }
 }
@@ -126,18 +133,12 @@ async def handle_smart_sensor(message: types.Message):
 
     lang = get_lang(message)
     t = TRANSLATIONS[lang]
-    text = message.text.lower()
-
     current_state = user_states.get(user_id, "main_menu")
 
-    # التعامل مع الرد العفوي للمستخدم عند اختيار وسيلة دفع إلكترونية
     if current_state == "waiting_for_payment_method":
         user_states[user_id] = "main_menu"
-        selected_item = user_data.get(user_id, {}).get("item_name", "الخدمة")
-        
-        # إرسال رابط بوابة الدفع الآمنة (Stripe) بدلاً من أي آيبان مباشر
         await message.answer(
-            t["stripe_text"].format(url=STRIPE_PAYMENT_URL),
+            t["stripe_text"].format(url=STRIPE_ONETIME_URL),
             parse_mode="Markdown"
         )
         return
@@ -163,7 +164,16 @@ async def process_callbacks(call: types.CallbackQuery) -> None:
         user_states[user_id] = "main_menu"
         user_data[user_id] = {"item_name": t["web3"]}
         await call.message.answer(
-            t["stripe_text"].format(url=STRIPE_PAYMENT_URL),
+            t["web3_text"].format(wallet=METAMASK_WALLET_ADDRESS),
+            parse_mode="Markdown",
+        )
+        return
+
+    if call.data == "sub":
+        user_states[user_id] = "main_menu"
+        user_data[user_id] = {"item_name": t["sub"]}
+        await call.message.answer(
+            t["stripe_text"].format(url=STRIPE_SUB_URL),
             parse_mode="Markdown",
         )
         return
@@ -185,12 +195,10 @@ async def process_callbacks(call: types.CallbackQuery) -> None:
         "real_estate": t["real_estate"],
         "cars": t["cars"],
         "services": t["services"],
-        "containers": t["containers"],
-        "sub": t["sub"]
+        "containers": t["containers"]
     }
     
     item_name = item_names.get(call.data, "Service")
-    
     user_data[user_id] = {"item_name": item_name}
     user_states[user_id] = "waiting_for_payment_method"
 
