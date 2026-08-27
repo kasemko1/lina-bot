@@ -7,7 +7,7 @@ import requests
 
 API_TOKEN = os.getenv("BOT_TOKEN")
 
-# رقم الآيدي الخاص بك لتلقي الملاحظات والشكاوى فوراً
+# رقم الآيدي الخاص بك المعتمد لتلقي الملاحظات والشكاوى فوراً
 ADMIN_CHAT_ID = 8807102611  
 
 # روابط Stripe الرسمية الخاصة بك (باليورو كعملة أساسية)
@@ -37,8 +37,6 @@ def get_converted_prices():
         
         usd_rate = rates.get("USD", 1.08)
         gbp_rate = rates.get("GBP", 0.85)
-        cad_rate = rates.get("CAD", 1.47)
-        aud_rate = rates.get("AUD", 1.65)
         
         sub_eur = 2.99
         one_eur = 0.50
@@ -55,54 +53,54 @@ def get_converted_prices():
 
 TRANSLATIONS = {
     "ar": {
-        "welcome": "🟣 <b>مرحباً بك في البوابة الملكية، يا كاسم!</b>\n\n🔹 تم تصميم الواجهة بنسق <b>الموف الغامق اللامع (Neon Dark Violet)</b> لتوفير تجربة بصرية تخطف الأنظار.\n🔹 الأسعار تتحدث لحظياً بالعملات المحلية.\n🔹 نظام رصد الملاحظات والشكاوى يعمل بكفاءة عالية.\n\n✨ <i>اختر الخدمة المطلوبة من القائمة أدناه:</i>",
-        "voice_welcome": "أهلاً بك، اختر الخدمة المطلوبة.",
-        "blocked": "عذراً، الخدمة غير متاح في منطقتك.",
+        "welcome": "🟢 <b>YunoChat & PiNebula Engine Active</b>\n\n🔹 نظام الحماية المشفر والذكاء الاصطناعي الأخلاقي يعملان بنجاح.\n🔹 إضاءة نيون فيروزية مفعلة.\n\n✨ <i>اختر الخدمة المطلوبة:</i>",
+        "voice_welcome": "أهلاً بك في نظام وايونو تشات، اختر الخدمة.",
+        "blocked": "عذراً، الخدمة غير متاحة في منطقتك.",
         "real_estate": "🏢 عقارات دولية",
         "cars": "🚗 قطاع السيارات",
         "services": "⚡ خدمات عامة",
-        "ledger": "📊 السجل المحاسبي الفاخر",
-        "containers": "🚢 إدارة الشحن والكونتينرات",
-        "support": "📞 الدعم الرقمي المباشر",
-        "feedback": "💬 صندوق الاقتراحات والشكاوى الفوري",
+        "ledger": "📊 السجل المحاسبي",
+        "containers": "🚢 الشحن والكونتينرات",
+        "support": "📞 الدعم الفني",
+        "feedback": "💬 Ethos Engine (شكاوى وملاحظات)",
         "sub": "💎 اشتراك VIP ({price})",
-        "web3": "🔮 دفع رقمي مدمج ({price})",
+        "web3": "🔮 دفع رقمي Web3 ({price})",
         "bill_elec": "⚡ فاتورة الكهرباء",
         "bill_water": "💧 فاتورة المياه",
         "bill_phone": "📱 فاتورة الاتصالات",
         "bill_tax": "🚗 ضريبة المركبات",
-        "payment_prompt": "🟣 <b>تأكيد العملية المالية:</b>\n\nلقد اخترت: <b>{item}</b>\n\nلإتمام الدفع بأمان تام عبر بوابتنا الإلكترونية المعتمدة، يجدر النقر على الزر أدناه:",
-        "feedback_prompt": "🟣 <b>صندوق الملاحظات والتطوير:</b>\n\nأكتب ملاحظتك أو شكواك بحرية، وسيتم تحويلها مباشرة إلى الإدارة العليا (كاسم) لغرض التطوير الفوري وتحسين جودة الخدمة:",
-        "feedback_thanks": "✨ تم استلام ملاحظتك بنجاح وتم توجيهها للإدارة. شكراً لمساهمتك في رفع مستوى الجودة!",
-        "ledger_report": "📊 <b>تقرير السجل المحاسبي (النظام الأبيض):</b>\n\n- الحركات المسجلة: {count}\n- الحالة القانونية والتشغيلية: موثقة وسليمة 100%.",
-        "stripe_text": "💳 <b>بوابة الدفع الإلكتروني المشفرة (Stripe):</b>\n\nالأسعار مهيأة ومحولة تلقائياً لعملتك المحلية.\n\n🔗 [اضغط هنا لإتمام الدفع الآمن]({url})\n\nسيتم تسجيل العملية فوراً في دفتر الحسابات بعد الإتمام.",
-        "web3_text": "🔮 <b>بوابة الدفع اللامركزي (Web3 / Polygon):</b>\n\nلإتمام القيمة المعادلة، يرجى التحويل المباشر إلى عنوان محفظتك الرسمية:\n\n`{wallet}`",
-        "quick_reply": "🟣 مرحباً بك مجدداً. اختر إحدى الخدمات المتاحة:"
+        "payment_prompt": "🟢 <b>تأكيد العملية المشفرة:</b>\n\nلقد اخترت: <b>{item}</b>\n\nلإتمام الدفع الآمن عبر البوابة المعتمدة:",
+        "feedback_prompt": "✍️ تفضل، اكتب ملاحظتك أو شكواك لنظام الحماية (Ethos Engine)، وستصل مباشرة إلى إدارتك (كاسم):",
+        "feedback_thanks": "✨ تم إرسال التقرير بنجاح إلى شبكة العقد (Nodes)! شكراً لمساهمتك.",
+        "ledger_report": "📊 <b>سجل العقد (Nodes Ledger):</b>\n\n- العمليات المسجلة: {count}\n- الحالة: موثقة عبر Zero-Knowledge proofs.",
+        "stripe_text": "💳 <b>بوابة الدفع الآمنة (Stripe):</b>\n\n🔗 [اضغط هنا لإتمام الدفع الفوري]({url})",
+        "web3_text": "🪙 <b>تحويل عبر شبكة Polygon (Web3):</b>\n\nأرسل المبلغ إلى العنوان التالي:\n\n`{wallet}`",
+        "quick_reply": "🟢 نظام العمليات السريعة جاهز. اختر الخدمة:"
     },
     "en": {
-        "welcome": "🟣 <b>Welcome to the Royal Gateway, Kassem!</b>\n\n🔹 Designed with an exclusive <b>Neon Dark Violet</b> aesthetic for an elite visual experience.\n🔹 Live currency conversion enabled.\n🔹 Direct feedback routing is fully active.\n\n✨ <i>Please select a service below:</i>",
-        "voice_welcome": "Welcome, please choose a service.",
-        "blocked": "Sorry, service not available in your region.",
+        "welcome": "🟢 <b>YunoChat & PiNebula Engine Active</b>\n\n🔹 Zero-Knowledge cryptographic protection running.\n🔹 Neon Turquoise theme active.\n\n✨ <i>Select a service:</i>",
+        "voice_welcome": "Welcome to Yuno ecosystem, select a service.",
+        "blocked": "Service not available in your region.",
         "real_estate": "🏢 Real Estate",
         "cars": "🚗 Automotive",
         "services": "⚡ General Services",
-        "ledger": "📊 Elite Accounting Ledger",
-        "containers": "🚢 Container Shipping",
+        "ledger": "📊 Accounting Ledger",
+        "containers": "🚢 Containers",
         "support": "📞 Digital Support",
-        "feedback": "💬 Direct Feedback & Issues",
-        "sub": "💎 VIP Subscription ({price})",
-        "web3": "🔮 Crypto Gateway ({price})",
+        "feedback": "💬 Ethos Engine Feedback",
+        "sub": "💎 VIP Sub ({price})",
+        "web3": "🔮 Crypto Web3 ({price})",
         "bill_elec": "⚡ Electricity",
         "bill_water": "💧 Water",
-        "bill_phone": "📱 Phone Bill",
+        "bill_phone": "📱 Phone",
         "bill_tax": "🚗 Car Tax",
-        "payment_prompt": "🟣 <b>Payment Confirmation:</b>\n\nSelected service: <b>{item}</b>\n\nTo proceed with secure checkout via our gateway, please click the button below:",
-        "feedback_prompt": "🟣 <b>Feedback & Complaints Box:</b>\n\nPlease type your message. It will be routed instantly to management (Kassem) to upgrade our service quality:",
-        "feedback_thanks": "✨ Feedback successfully transmitted! Thank you for helping us elevate our standards.",
-        "ledger_report": "📊 <b>Ledger Report (White-Market):</b>\n\n- Logged entries: {count}\n- Status: Fully compliant and verified.",
-        "stripe_text": "💳 <b>Encrypted Payment Gateway (Stripe):</b>\n\nPrices dynamically adjusted to your local currency.\n\n🔗 [Click here for Secure Checkout]({url})\n\nTransaction will be logged automatically upon completion.",
-        "web3_text": "🔮 <b>Decentralized Web3 Payment (Polygon):</b>\n\nTransfer the equivalent amount directly to your MetaMask wallet address below:\n\n`{wallet}`",
-        "quick_reply": "🟣 Welcome back. Choose your next action:"
+        "payment_prompt": "🟢 <b>Encrypted Payment Confirmation:</b>\n\nSelected: <b>{item}</b>\n\nProceed securely below:",
+        "feedback_prompt": "✍️ Enter your feedback for Ethos Engine. It will be routed directly to management:",
+        "feedback_thanks": "✨ Node report sent successfully! Thank you.",
+        "ledger_report": "📊 <b>Nodes Ledger Report:</b>\n\n- Logged entries: {count}\n- Status: Verified.",
+        "stripe_text": "💳 <b>Secure Checkout (Stripe):</b>\n\n🔗 [Click here to pay]({url})",
+        "web3_text": "🪙 <b>Web3 Polygon Transfer:</b>\n\nSend funds to:\n\n`{wallet}`",
+        "quick_reply": "🟢 Quick access ready. Choose an action:"
     }
 }
 
@@ -177,7 +175,7 @@ async def handle_smart_sensor(message: types.Message):
         username = f"@{message.from_user.username}" if message.from_user.username else "بدون معرف"
         
         try:
-            admin_msg = f"🟣 **ملاحظة / شكوى جديدة (النسق الفاخر):**\n\n👤 الاسم: {user_name} ({username})\n🆔 الآيدي: `{user_id}`\n\n💬 النص:\n_{user_text}_"
+            admin_msg = f"🟢 **تقرير Ethos Engine (شكوى/ملاحظة):**\n\n👤 المستخدم: {user_name} ({username})\n🆔 الآيدي: `{user_id}`\n\n💬 المحتوى:\n_{user_text}_"
             await bot.send_message(ADMIN_CHAT_ID, admin_msg, parse_mode="Markdown")
         except Exception as e:
             logging.error(f"Failed to send feedback to admin: {e}")
