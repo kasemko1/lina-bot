@@ -111,17 +111,20 @@ async def start(message: types.Message) -> None:
 async def process(call: types.CallbackQuery) -> None:
     user_id = call.from_user.id
     await call.answer()
-
 if call.data == "web3":
-        voice_text = "لإتمام الطلب، يرجى دفع رسوم فتح الطلب وقدرها خمسين سنت فقط عبر العملات الرقمية."
+        voice_text = (
+            "لإتمام الطلب، يرجى دفع رسوم فتح الطلب وقدرها خمسين سنت فقط عبر العملات الرقمية."
+        )
         await send_lina_voice(call.message.chat.id, voice_text)
-        await call.message.answer(f"💳 **الدفع عبر العملات الرقمية (Web3):**\n\n📍 **العنوان:** `{WEB3_WALLET}`\n🌐 **الشبكة:** {WEB3_NETWORK}\n💰 **المبلغ المطلوب:** 0.50 USDT\n\nبعد الدفع، يرجى إرسال رقم العملية (Tx Hash) الذي يبدأ بـ (0x...).", parse_mode="Markdown")
-        return
-    user_data[user_id] = {"type": call.data, "step": 1}
-    price = "2.99€ اشتراك شهري" if call.data == "sub" else "0.50€ رسوم فتح الطلب"
-    keyboard = InlineKeyboardMarkup().add(
-        InlineKeyboardButton(f"ادفع {price} - كريبتو", callback_data="web3")
-    ) await send_lina_voice(
+        await call.message.answer(
+            f"💳 **الدفع عبر العملات الرقمية (Web3):**\n\n"
+            f"📍 **العنوان:** `{WEB3_WALLET}`\n"
+            f"🌐 **الشبكة:** {WEB3_NETWORK}\n"
+            f"💰 **المبلغ المطلوب:** 0.50 USDT\n\n"
+            f"بعد الدفع، يرجى إرسال رقم العملية (Tx Hash) الذي يبدأ بـ (0x...).",
+            parse_mode="Markdown",
+        )
+        return    ) await send_lina_voice(
         call.message.chat.id,
         f"ممتاز، رسوم الخدمة {price} فقط، يرجى الدفع بالعملات الرقمية لفتح الطلب",
     ) await call.message.answer(
