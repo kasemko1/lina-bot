@@ -258,7 +258,7 @@ def check_payment(tx_hash: str, expected_amount: float) -> bool:
 
 def validate_configuration() -> None:
     missing = [name for name, value in {
-        "BOT_TOKEN": TOKEN,
+        "BOT_TOKEN": BOT_TOKEN,
         "POLYGONSCAN_API_KEY": POLYGONSCAN_API_KEY,
     }.items() if not value]
     if missing:
