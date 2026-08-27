@@ -171,7 +171,7 @@ TRANSLATIONS = {
         "bill_phone": "🟢 Teléfono 🟢",
         "bill_tax": "🟢 Impuesto de autos 🟢",
         "payment_prompt": "🟢 <b>Confirmación de pago:</b>\n\nSeleccionado: <b>{item}</b>\n\nPara continuar de forma segura, haga clic a continuación:",
-        "feedback_prompt": "🟢 Escriba sus comentarios o reclamación. Se enviará directamente a la gerencia:",
+        "feedback_prompt": "🟢 Escriba sus comentarios أو reclamación. Se enviará directamente a la gerencia:",
         "feedback_thanks": "🟢 ¡Comentarios enviados con éxito! Gracias.",
         "ledger_report": "🟢 <b>Informe del libro mayor:</b>\n\n- Entradas registradas: {count}\n- Estado: Verificado.",
         "stripe_text": "🟢 <b>Pago seguro (Stripe):</b>\n\nPrecios ajustados dinámicamente.\n\n🔗 [Haga clic aquí para pagar]({url})",
@@ -212,7 +212,7 @@ def get_lang(message_or_call):
         for lang in TRANSLATIONS:
             if code.startswith(lang):
                 return lang
-    return "en" # اللغة الافتراضية في حال عدم التعرف على لغة الهاتف
+    return "en"
 
 async def send_lina_voice(chat_id, text, lang='ar'):
     try:
@@ -287,14 +287,6 @@ async def handle_smart_sensor(message: types.Message):
         await message.answer(t["feedback_thanks"])
         return
 
-    if current_state == "waiting_for_payment_method":
-        user_states[user_id] = "main_menu"
-        await message.answer(
-            t["stripe_text"].format(url=STRIPE_ONETIME_URL),
-            parse_mode="Markdown"
-        )
-        return
-
     user_states[user_id] = "main_menu"
     await send_lina_voice(message.chat.id, t["voice_welcome"], lang)
     await message.answer(t["quick_reply"], reply_markup=get_main_keyboard(t), parse_mode="HTML")
@@ -357,14 +349,20 @@ async def process_callbacks(call: types.CallbackQuery) -> None:
         "containers": t["containers"]
     }
     
-    item_name = item_names.get(call.data, "Service")
-    user_data[user_id] = {"item_name": item_name}
-    user_states[user_id] = "waiting_for_payment_method"
-
-    await call.message.answer(
-        t["payment_prompt"].format(item=item_name),
-        parse_mode="HTML"
-    )
+    if call.data in item_names:
+        item_name = item_names[call.data]
+        user_states[user_id] = "main_menu"
+        
+        # إنشاء زر تفاعلي يظهر تحت الرسالة يوجه المستخدم مباشرة لرابط الدفع
+        pay_keyboard = InlineKeyboardMarkup()
+        pay_keyboard.add(InlineKeyboardButton("🔗 اضغط هنا لإتمام الدفع", url=STRIPE_ONETIME_URL))
+        
+        await call.message.answer(
+            t["payment_prompt"].format(item=item_name),
+            reply_markup=pay_keyboard,
+            parse_mode="HTML"
+        )
+        return
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
