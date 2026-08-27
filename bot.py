@@ -112,20 +112,20 @@ async def process(call: types.CallbackQuery) -> None:
     user_id = call.from_user.id
     await call.answer()
 
-    if call.data == "web3":
+if call.data == "web3":
         voice_text = (
-            f"للدفع عبر العملات الرقمية، يرجى التحويل على شبكة {WEB3_NETWORK}، "
-            "وبعد الدفع أرسل رقم العملية الذي يبدأ بصفر إكس"
+            "لإتمام الطلب، يرجى دفع رسوم فتح الطلب وقدرها خمسين سنت فقط عبر العملات الرقمية."
         )
         await send_lina_voice(call.message.chat.id, voice_text)
         await call.message.answer(
-            f"ادفع عبر Web3:\n\nالعنوان: `{WEB3_WALLET}`\n"
-            f"الشبكة: {WEB3_NETWORK}\nالمبلغ: 0.50 USDT أو 2.99 USDT\n\n"
-            "بعد الدفع أرسل Tx Hash (يبدأ بـ 0x...)",
+            f"💳 **الدفع عبر العملات الرقمية (Web3):**\n\n"
+            f"📍 **العنوان:** `{WEB3_WALLET}`\n"
+            f"🌐 **الشبكة:** {WEB3_NETWORK}\n"
+            f"💰 **المبلغ المطلوب:** 0.50 USDT\n\n"
+            f"بعد الدفع، يرجى إرسال رقم العملية (Tx Hash) الذي يبدأ بـ (0x...).",
             parse_mode="Markdown",
         )
         return
-
     user_data[user_id] = {"type": call.data, "step": 1}
     price = "2.99€ اشتراك شهري" if call.data == "sub" else "0.50€ رسوم فتح الطلب"
     keyboard = InlineKeyboardMarkup().add(
