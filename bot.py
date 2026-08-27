@@ -124,25 +124,19 @@ if call.data == "web3":
             f"💰 **المبلغ المطلوب:** 0.50 USDT\n\n"
             f"بعد الدفع، يرجى إرسال رقم العملية (Tx Hash) الذي يبدأ بـ (0x...).",
             parse_mode="Markdown",
-        )
-        return                
+        )return                
     user_data[user_id] = {"type": call.data, "step": 1}
     price = "2.99€ اشتراك شهري" if call.data == "sub" else "0.50€ رسوم فتح الطلب"
     keyboard = InlineKeyboardMarkup().add(
         InlineKeyboardButton(f"ادفع {price} - كريبتو", callback_data="web3")
-    )
-    await send_lina_voice(
+    ) await send_lina_voice(
         call.message.chat.id,
         f"ممتاز، رسوم الخدمة {price} فقط، يرجى الدفع بالعملات الرقمية لفتح الطلب",
-    )
-    await call.message.answer(
+    ) await call.message.answer(
         f"ممتاز!\nرسوم الخدمة **{price} فقط**\n\nادفع كريبتو ليفتح الطلب:",
         reply_markup=keyboard,
         parse_mode="Markdown",
-    )
-
-
-@dp.message_handler(lambda message: bool(message.text) and message.text.startswith("0x"))
+    )@dp.message_handler(lambda message: bool(message.text) and message.text.startswith("0x"))
 async def verify_tx(message: types.Message) -> None:
     tx_hash = message.text.strip()
     if not TX_HASH_RE.fullmatch(tx_hash):
@@ -173,7 +167,6 @@ async def verify_tx(message: types.Message) -> None:
             "عذرا، لم أجد عملية الدفع، يرجى التأكد من الشبكة بوليغون والمحاولة بعد دقيقة",
         )
         await message.answer("ما لقيت الدفعة. تأكد من شبكة Polygon وجرب بعد دقيقة.")
-
 
 @dp.message_handler(lambda message: bool(message.text) and not message.text.startswith("0x"))
 async def steps(message: types.Message) -> None:
@@ -211,8 +204,6 @@ async def steps(message: types.Message) -> None:
             reply_markup=keyboard,
             parse_mode="Markdown",
         )
-
-
 async def send_request_to_admin(user_id: int, info: dict[str, Any]) -> None:
     await bot.send_message(
         ADMIN_ID,
@@ -220,8 +211,6 @@ async def send_request_to_admin(user_id: int, info: dict[str, Any]) -> None:
         f"من وين: {info['where']}\nميزانية: {info['budget']}\n"
         f"واتساب: {info['phone']}\nID: {user_id}",
     )
-
-
 def check_payment(tx_hash: str, expected_amount: float) -> bool:
     """Confirm an incoming Polygon USDT transfer to our wallet."""
     if not POLYGONSCAN_API_KEY:
