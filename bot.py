@@ -111,33 +111,23 @@ async def start(message: types.Message) -> None:
 async def process(call: types.CallbackQuery) -> None:
     user_id = call.from_user.id
     await call.answer()
-if call.data == "web3":
+
+    if call.data == "web3":
         voice_text = (
-            "لإتمام الطلب، يرجى دفع رسوم فتح الطلب وقدرها خمسين سنت فقط عبر العملات الرقمية."
+            "To complete the order, please pay the opening fee of only fifty cents via cryptocurrencies."
         )
         await send_lina_voice(call.message.chat.id, voice_text)
         await call.message.answer(
-            f"💳 **الدفع عبر العملات الرقمية (Web3):**\n\n"
-            f"📍 **العنوان:** `{WEB3_WALLET}`\n"
-            f"🌐 **الشبكة:** {WEB3_NETWORK}\n"
-            f"💰 **المبلغ المطلوب:** 0.50 USDT\n\n"
-            f"بعد الدفع، يرجى إرسال رقم العملية (Tx Hash) الذي يبدأ بـ (0x...).",
+            f"💳 **Payment via Crypto (Web3):**\n\n"
+            f"📍 **Address:** `{WEB3_WALLET}`\n"
+            f"🌐 **Network:** {WEB3_NETWORK}\n"
+            f"💰 **Amount Required:** 0.50 USDT\n\n"
+            f"After payment, please send the transaction hash (Tx Hash) starting with (0x...).",
             parse_mode="Markdown",
         )
-        return    ) await send_lina_voice(
-        call.message.chat.id,
-        f"ممتاز، رسوم الخدمة {price} فقط، يرجى الدفع بالعملات الرقمية لفتح الطلب",
-    ) await call.message.answer(
-        f"ممتاز!\nرسوم الخدمة **{price} فقط**\n\nادفع كريبتو ليفتح الطلب:",
-        reply_markup=keyboard,
-        parse_mode="Markdown",
-    )@dp.message_handler(lambda message: bool(message.text) and message.text.startswith("0x"))
-async def verify_tx(message: types.Message) -> None:
-    tx_hash = message.text.strip()
-    if not TX_HASH_RE.fullmatch(tx_hash):
-        await message.answer("صيغة Tx Hash غير صحيحة. أرسل 64 خانة بعد 0x.")
         return
 
+    user_data[user_id] = {"type": call.data, "step": 1}
     await message.answer("عم أتأكد من الدفعة، لحظة من فضلك...")
     await send_lina_voice(message.chat.id, "لحظة من فضلك، جاري التأكد من عملية الدفع الخاصة بكم")
 
