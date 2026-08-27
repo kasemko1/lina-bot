@@ -3,10 +3,14 @@ from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from gtts import gTTS
 import os
+import requests
 
 API_TOKEN = os.getenv("BOT_TOKEN")
 
-# روابط Stripe الرسمية الخاصة بك
+# رقم الآيدي الخاص بك لتلقي الملاحظات والشكاوى فوراً
+ADMIN_CHAT_ID = 8807102611  
+
+# روابط Stripe الرسمية الخاصة بك (باليورو كعملة أساسية)
 STRIPE_SUB_URL = "https://buy.stripe.com/eVq9AS98hfsZ7Hu3LadZ600"       # اشتراك شهري (€2.99)
 STRIPE_ONETIME_URL = "https://buy.stripe.com/evq8w03NXbcJ9PC3LadZ601" # خدمة فردية (€0.50)
 
@@ -24,52 +28,81 @@ user_ledger = {}
 
 BLOCKED_COUNTRIES = ["ru", "ir"]
 
+# دالة لجلب أسعار الصرف الحية مقابل اليورو
+def get_converted_prices():
+    try:
+        response = requests.get("https://api.exchangerate-api.com/v4/latest/EUR", timeout=5)
+        data = response.json()
+        rates = data.get("rates", {})
+        
+        usd_rate = rates.get("USD", 1.08)
+        gbp_rate = rates.get("GBP", 0.85)
+        cad_rate = rates.get("CAD", 1.47)
+        aud_rate = rates.get("AUD", 1.65)
+        
+        sub_eur = 2.99
+        one_eur = 0.50
+        
+        return {
+            "sub": f"€{sub_eur} (~${round(sub_eur * usd_rate, 2)} USD / £{round(sub_eur * gbp_rate, 2)} GBP)",
+            "onetime": f"€{one_eur} (~${round(one_eur * usd_rate, 2)} USD / £{round(one_eur * gbp_rate, 2)} GBP)"
+        }
+    except Exception:
+        return {
+            "sub": "€2.99 (~$3.23 USD / £2.54 GBP)",
+            "onetime": "€0.50 (~$0.54 USD / £0.43 GBP)"
+        }
+
 TRANSLATIONS = {
     "ar": {
-        "welcome": "هلا والله يا كاسم! أنا لينا. شو أمورنا اليوم؟ شو حابب نخلص ونسجل؟",
-        "voice_welcome": "هلا فيك، شو الخدمة المطلوبة اليوم؟",
-        "blocked": "عذراً، الخدمة مش شغالة بدلتك.",
-        "real_estate": "عقارات",
-        "cars": "سيارات",
-        "services": "خدمات عامة",
-        "ledger": "📊 السجل المحاسبي",
-        "containers": "كونتينرات",
-        "support": "📞 الدعم الفني",
-        "sub": "اشتراكي €2.99",
-        "web3": "دفع كريبتو €0.50",
+        "welcome": "🟣 <b>مرحباً بك في البوابة الملكية، يا كاسم!</b>\n\n🔹 تم تصميم الواجهة بنسق <b>الموف الغامق اللامع (Neon Dark Violet)</b> لتوفير تجربة بصرية تخطف الأنظار.\n🔹 الأسعار تتحدث لحظياً بالعملات المحلية.\n🔹 نظام رصد الملاحظات والشكاوى يعمل بكفاءة عالية.\n\n✨ <i>اختر الخدمة المطلوبة من القائمة أدناه:</i>",
+        "voice_welcome": "أهلاً بك، اختر الخدمة المطلوبة.",
+        "blocked": "عذراً، الخدمة غير متاح في منطقتك.",
+        "real_estate": "🏢 عقارات دولية",
+        "cars": "🚗 قطاع السيارات",
+        "services": "⚡ خدمات عامة",
+        "ledger": "📊 السجل المحاسبي الفاخر",
+        "containers": "🚢 إدارة الشحن والكونتينرات",
+        "support": "📞 الدعم الرقمي المباشر",
+        "feedback": "💬 صندوق الاقتراحات والشكاوى الفوري",
+        "sub": "💎 اشتراك VIP ({price})",
+        "web3": "🔮 دفع رقمي مدمج ({price})",
         "bill_elec": "⚡ فاتورة الكهرباء",
         "bill_water": "💧 فاتورة المياه",
-        "bill_phone": "📱 فاتورة الهاتف",
-        "bill_tax": "🚗 ضريبة السيارة",
-        "payment_prompt": "تمام، اخترت: **{item}**.\n\nلإتمام الدفع بشكل قانوني وآمن عبر بوابة الدفع الإلكترونية، يرجى الضغط على الزر أدناه:",
-        "payment_received_success": "كفو! ✅ تم التحقق من الدفع وتوثيق ({item}) بالدفتر عنا رسمياً.",
-        "ledger_report": "📊 **السجل المحاسبي:**\n\n- العمليات المسجلة: {count}\n- الوضع تمام وموثق 100%.",
-        "stripe_text": "💳 **بوابة الدفع الإلكتروني الآمنة (Stripe):**\n\nاضغط على الرابط أدناه لإتمام الدفع بالبطاقة البنكية بشكل آمن ومطابق للقوانين:\n\n🔗 [اضغط هنا للدفع بالبطاقة]({url})\n\nبعد إتمام الدفع، سيتم تسجيل العملية وتحديث حسابك تلقائياً.",
-        "web3_text": "🪙 **دفع عبر Web3 (كريبتو):**\n\nلإتمام الدفع، يرجى تحويل المبلغ مباشرة إلى عنوان محفظتك في ميتا ماسك على شبكة Polygon:\n\n`{wallet}`\n\n*(تأكد من إرسال المبلغ الصحيح للعنوان أعلاه)*",
-        "quick_reply": "معك، شو عنا شغل تاني؟ اختار من تحت:"
+        "bill_phone": "📱 فاتورة الاتصالات",
+        "bill_tax": "🚗 ضريبة المركبات",
+        "payment_prompt": "🟣 <b>تأكيد العملية المالية:</b>\n\nلقد اخترت: <b>{item}</b>\n\nلإتمام الدفع بأمان تام عبر بوابتنا الإلكترونية المعتمدة، يجدر النقر على الزر أدناه:",
+        "feedback_prompt": "🟣 <b>صندوق الملاحظات والتطوير:</b>\n\nأكتب ملاحظتك أو شكواك بحرية، وسيتم تحويلها مباشرة إلى الإدارة العليا (كاسم) لغرض التطوير الفوري وتحسين جودة الخدمة:",
+        "feedback_thanks": "✨ تم استلام ملاحظتك بنجاح وتم توجيهها للإدارة. شكراً لمساهمتك في رفع مستوى الجودة!",
+        "ledger_report": "📊 <b>تقرير السجل المحاسبي (النظام الأبيض):</b>\n\n- الحركات المسجلة: {count}\n- الحالة القانونية والتشغيلية: موثقة وسليمة 100%.",
+        "stripe_text": "💳 <b>بوابة الدفع الإلكتروني المشفرة (Stripe):</b>\n\nالأسعار مهيأة ومحولة تلقائياً لعملتك المحلية.\n\n🔗 [اضغط هنا لإتمام الدفع الآمن]({url})\n\nسيتم تسجيل العملية فوراً في دفتر الحسابات بعد الإتمام.",
+        "web3_text": "🔮 <b>بوابة الدفع اللامركزي (Web3 / Polygon):</b>\n\nلإتمام القيمة المعادلة، يرجى التحويل المباشر إلى عنوان محفظتك الرسمية:\n\n`{wallet}`",
+        "quick_reply": "🟣 مرحباً بك مجدداً. اختر إحدى الخدمات المتاحة:"
     },
     "en": {
-        "welcome": "Hey Kassem! I'm Lina. What are we working on today?",
-        "voice_welcome": "Hey, what service do you need?",
-        "blocked": "Sorry, not available in your region.",
-        "real_estate": "Real Estate",
-        "cars": "Cars",
-        "services": "General Services",
-        "ledger": "📊 Accounting Ledger",
-        "containers": "Containers",
+        "welcome": "🟣 <b>Welcome to the Royal Gateway, Kassem!</b>\n\n🔹 Designed with an exclusive <b>Neon Dark Violet</b> aesthetic for an elite visual experience.\n🔹 Live currency conversion enabled.\n🔹 Direct feedback routing is fully active.\n\n✨ <i>Please select a service below:</i>",
+        "voice_welcome": "Welcome, please choose a service.",
+        "blocked": "Sorry, service not available in your region.",
+        "real_estate": "🏢 Real Estate",
+        "cars": "🚗 Automotive",
+        "services": "⚡ General Services",
+        "ledger": "📊 Elite Accounting Ledger",
+        "containers": "🚢 Container Shipping",
         "support": "📞 Digital Support",
-        "sub": "Monthly Sub €2.99",
-        "web3": "Crypto €0.50",
+        "feedback": "💬 Direct Feedback & Issues",
+        "sub": "💎 VIP Subscription ({price})",
+        "web3": "🔮 Crypto Gateway ({price})",
         "bill_elec": "⚡ Electricity",
         "bill_water": "💧 Water",
-        "bill_phone": "📱 Phone",
+        "bill_phone": "📱 Phone Bill",
         "bill_tax": "🚗 Car Tax",
-        "payment_prompt": "Got it, selected: **{item}**.\n\nTo pay securely via our certified payment gateway, please click the button below:",
-        "payment_received_success": "Done! ✅ Payment verified and ({item}) logged successfully.",
-        "ledger_report": "📊 **Ledger:**\n\n- Logged items: {count}\n- All clean and compliant.",
-        "stripe_text": "💳 **Secure Payment Gateway (Stripe):**\n\nClick the link below to pay securely with your card:\n\n🔗 [Click here for Secure Checkout]({url})\n\nOnce paid, your transaction will be logged automatically.",
-        "web3_text": "🪙 **Web3 Crypto Payment:**\n\nTo pay, please send the funds directly to your MetaMask wallet address below (Polygon/EVM):\n\n`{wallet}`",
-        "quick_reply": "I'm here. What's next?"
+        "payment_prompt": "🟣 <b>Payment Confirmation:</b>\n\nSelected service: <b>{item}</b>\n\nTo proceed with secure checkout via our gateway, please click the button below:",
+        "feedback_prompt": "🟣 <b>Feedback & Complaints Box:</b>\n\nPlease type your message. It will be routed instantly to management (Kassem) to upgrade our service quality:",
+        "feedback_thanks": "✨ Feedback successfully transmitted! Thank you for helping us elevate our standards.",
+        "ledger_report": "📊 <b>Ledger Report (White-Market):</b>\n\n- Logged entries: {count}\n- Status: Fully compliant and verified.",
+        "stripe_text": "💳 <b>Encrypted Payment Gateway (Stripe):</b>\n\nPrices dynamically adjusted to your local currency.\n\n🔗 [Click here for Secure Checkout]({url})\n\nTransaction will be logged automatically upon completion.",
+        "web3_text": "🔮 <b>Decentralized Web3 Payment (Polygon):</b>\n\nTransfer the equivalent amount directly to your MetaMask wallet address below:\n\n`{wallet}`",
+        "quick_reply": "🟣 Welcome back. Choose your next action:"
     }
 }
 
@@ -92,6 +125,7 @@ async def send_lina_voice(chat_id, text, lang='ar'):
         logging.error(f"Voice error: {e}")
 
 def get_main_keyboard(t):
+    prices = get_converted_prices()
     keyboard = InlineKeyboardMarkup(row_width=2)
     keyboard.add(
         InlineKeyboardButton(t["real_estate"], callback_data="real_estate"),
@@ -101,10 +135,11 @@ def get_main_keyboard(t):
         InlineKeyboardButton(t["bill_phone"], callback_data="bill_phone"),
         InlineKeyboardButton(t["bill_tax"], callback_data="bill_tax"),
         InlineKeyboardButton(t["ledger"], callback_data="view_ledger"),
+        InlineKeyboardButton(t["feedback"], callback_data="leave_feedback"),
         InlineKeyboardButton(t["services"], callback_data="services"),
         InlineKeyboardButton(t["containers"], callback_data="containers"),
-        InlineKeyboardButton(t["sub"], callback_data="sub"),
-        InlineKeyboardButton(t["web3"], callback_data="web3")
+        InlineKeyboardButton(t["sub"].format(price=prices["sub"]), callback_data="sub"),
+        InlineKeyboardButton(t["web3"].format(price=prices["onetime"]), callback_data="web3")
     )
     return keyboard
 
@@ -122,7 +157,7 @@ async def send_welcome(message: types.Message):
     t = TRANSLATIONS[lang]
     
     await send_lina_voice(message.chat.id, t["voice_welcome"], lang)
-    await message.answer(t["welcome"], reply_markup=get_main_keyboard(t))
+    await message.answer(t["welcome"], reply_markup=get_main_keyboard(t), parse_mode="HTML")
 
 @dp.message_handler(lambda message: not message.text.startswith('/'))
 async def handle_smart_sensor(message: types.Message):
@@ -135,6 +170,21 @@ async def handle_smart_sensor(message: types.Message):
     t = TRANSLATIONS[lang]
     current_state = user_states.get(user_id, "main_menu")
 
+    if current_state == "waiting_for_feedback":
+        user_states[user_id] = "main_menu"
+        user_text = message.text
+        user_name = message.from_user.full_name or "مستخدم مجهول"
+        username = f"@{message.from_user.username}" if message.from_user.username else "بدون معرف"
+        
+        try:
+            admin_msg = f"🟣 **ملاحظة / شكوى جديدة (النسق الفاخر):**\n\n👤 الاسم: {user_name} ({username})\n🆔 الآيدي: `{user_id}`\n\n💬 النص:\n_{user_text}_"
+            await bot.send_message(ADMIN_CHAT_ID, admin_msg, parse_mode="Markdown")
+        except Exception as e:
+            logging.error(f"Failed to send feedback to admin: {e}")
+            
+        await message.answer(t["feedback_thanks"])
+        return
+
     if current_state == "waiting_for_payment_method":
         user_states[user_id] = "main_menu"
         await message.answer(
@@ -145,7 +195,7 @@ async def handle_smart_sensor(message: types.Message):
 
     user_states[user_id] = "main_menu"
     await send_lina_voice(message.chat.id, t["voice_welcome"], lang)
-    await message.answer(t["quick_reply"], reply_markup=get_main_keyboard(t))
+    await message.answer(t["quick_reply"], reply_markup=get_main_keyboard(t), parse_mode="HTML")
 
 @dp.callback_query_handler(lambda call: True)
 async def process_callbacks(call: types.CallbackQuery) -> None:
@@ -160,9 +210,16 @@ async def process_callbacks(call: types.CallbackQuery) -> None:
     t = TRANSLATIONS[lang]
     await call.answer()
 
+    prices = get_converted_prices()
+
+    if call.data == "leave_feedback":
+        user_states[user_id] = "waiting_for_feedback"
+        await call.message.answer(t["feedback_prompt"], parse_mode="HTML")
+        return
+
     if call.data == "web3":
         user_states[user_id] = "main_menu"
-        user_data[user_id] = {"item_name": t["web3"]}
+        user_data[user_id] = {"item_name": t["web3"].format(price=prices["onetime"])}
         await call.message.answer(
             t["web3_text"].format(wallet=METAMASK_WALLET_ADDRESS),
             parse_mode="Markdown",
@@ -171,7 +228,7 @@ async def process_callbacks(call: types.CallbackQuery) -> None:
 
     if call.data == "sub":
         user_states[user_id] = "main_menu"
-        user_data[user_id] = {"item_name": t["sub"]}
+        user_data[user_id] = {"item_name": t["sub"].format(price=prices["sub"])}
         await call.message.answer(
             t["stripe_text"].format(url=STRIPE_SUB_URL),
             parse_mode="Markdown",
@@ -183,7 +240,7 @@ async def process_callbacks(call: types.CallbackQuery) -> None:
         count = len(user_ledger.get(user_id, []))
         await call.message.answer(
             t["ledger_report"].format(count=count),
-            parse_mode="Markdown"
+            parse_mode="HTML"
         )
         return
 
@@ -204,7 +261,7 @@ async def process_callbacks(call: types.CallbackQuery) -> None:
 
     await call.message.answer(
         t["payment_prompt"].format(item=item_name),
-        parse_mode="Markdown"
+        parse_mode="HTML"
     )
 
 if __name__ == '__main__':
