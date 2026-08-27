@@ -124,7 +124,8 @@ if call.data == "web3":
             f"💰 **المبلغ المطلوب:** 0.50 USDT\n\n"
             f"بعد الدفع، يرجى إرسال رقم العملية (Tx Hash) الذي يبدأ بـ (0x...).",
             parse_mode="Markdown",
-        )return                
+        )
+       return                
     user_data[user_id] = {"type": call.data, "step": 1}
     price = "2.99€ اشتراك شهري" if call.data == "sub" else "0.50€ رسوم فتح الطلب"
     keyboard = InlineKeyboardMarkup().add(
