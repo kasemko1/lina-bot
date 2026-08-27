@@ -51,6 +51,7 @@ def get_converted_prices():
             "onetime": "€0.50 (~$0.54 USD / £0.43 GBP)"
         }
 
+# القاموس الشامل للّغات الست (العربية، الإنجليزية، الألمانية، الفرنسية، الإسبانية، الإيطالية)
 TRANSLATIONS = {
     "ar": {
         "welcome": "🟢 <b>أهلاً بك في بوت لينا الرسمي!</b>\n\n🟢 تم تفعيل نظام رصد الملاحظات والشكاوى الفوري.\n🟢 العملات والأسعار تظهر بالعملات المحلية للعملاء.\n\n✨ <i>اختر الخدمة المطلوبة أدناه:</i>",
@@ -119,7 +120,7 @@ TRANSLATIONS = {
         "bill_water": "🟢 Wasserrechnung 🟢",
         "bill_phone": "🟢 Telefonrechnung 🟢",
         "bill_tax": "🟢 Kfz-Steuer 🟢",
-        "payment_prompt": "🟢 <b> Zahlungsbestätigung:</b>\n\nAusgewählt: <b>{item}</b>\n\nKlicken Sie unten, um sicher fortzufahren:",
+        "payment_prompt": "🟢 <b>Zahlungsbestätigung:</b>\n\nAusgewählt: <b>{item}</b>\n\nKlicken Sie unten, um sicher fortzufahren:",
         "feedback_prompt": "🟢 Bitte geben Sie Ihr Feedback oder Ihre Beschwerde ein. Es wird direkt an die Verwaltung gesendet:",
         "feedback_thanks": "🟢 Feedback erfolgreich gesendet! Vielen Dank.",
         "ledger_report": "🟢 <b>Bericht:</b>\n\n- Protokollierte Einträge: {count}\n- Status: Verifiziert.",
@@ -176,6 +177,31 @@ TRANSLATIONS = {
         "stripe_text": "🟢 <b>Pago seguro (Stripe):</b>\n\nPrecios ajustados dinámicamente.\n\n🔗 [Haga clic aquí para pagar]({url})",
         "web3_text": "🟢 <b>Pago Cripto Web3:</b>\n\nTransfiera el equivalente a su billetera:\n\n`{wallet}`",
         "quick_reply": "🟢 Bienvenido de nuevo al bot de Lina. Elija su próxima acción:"
+    },
+    "it": {
+        "welcome": "🟢 <b>Benvenuto nel bot ufficiale di Lina!</b>\n\n🟢 Sistema di feedback in tempo reale attivo.\n🟢 Supporto multi-valuta abilitato.\n\n✨ <i>Seleziona un servizio qui sotto:</i>",
+        "voice_welcome": "Benvenuto nel bot di Lina, seleziona il servizio desiderato.",
+        "blocked": "Spiacenti, il servizio non è disponibile nella tua regione.",
+        "real_estate": "🟢 Immobiliare 🟢",
+        "cars": "🟢 Settore Automotive 🟢",
+        "services": "🟢 Servizi Generali 🟢",
+        "ledger": "🟢 Registro Contabile 🟢",
+        "containers": "🟢 Spedizioni e Container 🟢",
+        "support": "🟢 Supporto Digitale 🟢",
+        "feedback": "🟢 Lascia Feedback / Reclamo 🟢",
+        "sub": "🟢 Abbonamento VIP ({price}) 🟢",
+        "web3": "🟢 Pagamento Cripto ({price}) 🟢",
+        "bill_elec": "🟢 Bolletta Luce 🟢",
+        "bill_water": "🟢 Bolletta Acqua 🟢",
+        "bill_phone": "🟢 Bolletta Telefono 🟢",
+        "bill_tax": "🟢 Tassa Veicoli 🟢",
+        "payment_prompt": "🟢 <b>Conferma operazione:</b>\n\nHai selezionato: <b>{item}</b>\n\nPer procedere in modo sicuro, clicca sul pulsante in basso:",
+        "feedback_prompt": "🟢 Scrivi il tuo feedback o reclamo. Verrà inviato direttamente all'amministrazione:",
+        "feedback_thanks": "🟢 Feedback inviato con successo all'amministrazione! Grazie.",
+        "ledger_report": "🟢 <b>Rapporto Registro Contabile:</b>\n\n- Voci registrate: {count}\n- Stato: Verificato 100%.",
+        "stripe_text": "🟢 <b>Pagamento Sicuro (Stripe):</b>\n\nPrezzo adattato alla tua valuta locale.\n\n🔗 [Clicca qui per pagare con carta]({url})",
+        "web3_text": "🟢 <b>Pagamento Cripto (Web3):</b>\n\nTrasferisci l'importo equivalente al tuo wallet:\n\n`{wallet}`",
+        "quick_reply": "🟢 Bentornato nel bot di Lina. Scegli una delle opzioni:"
     }
 }
 
@@ -186,12 +212,11 @@ def get_lang(message_or_call):
         for lang in TRANSLATIONS:
             if code.startswith(lang):
                 return lang
-    return "en" # اللغة الافتراضية إذا لم تتطابق
+    return "en" # اللغة الافتراضية في حال عدم التعرف على لغة الهاتف
 
 async def send_lina_voice(chat_id, text, lang='ar'):
     try:
-        # تحديد لغة الصوت بناءً على لغة المستخدم المتاحة في gTTS
-        voice_lang = lang if lang in ['ar', 'en', 'de', 'fr', 'es'] else 'en'
+        voice_lang = lang if lang in ['ar', 'en', 'de', 'fr', 'es', 'it'] else 'en'
         tts = gTTS(text=text, lang=voice_lang, slow=False)
         voice_path = "lina_voice.mp3"
         tts.save(voice_path)
