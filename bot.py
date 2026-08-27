@@ -128,6 +128,27 @@ async def process(call: types.CallbackQuery) -> None:
         return
 
     user_data[user_id] = {"type": call.data, "step": 1}
+    
+    if call.data == "real_estate":
+        category_name = "Real Estate"
+    elif call.data == "cars":
+        category_name = "Cars"
+    elif call.data == "services":
+        category_name = "Services"
+    elif call.data == "containers":
+        category_name = "Containers"
+    elif call.data == "sub":
+        category_name = "Monthly Subscription"
+    else:
+        category_name = "Selected Section"
+
+    await call.message.answer(
+        f"You have selected: **{category_name}**.\n\nPlease proceed by choosing the payment method:",
+        parse_mode="Markdown"
+    )        )
+        return
+
+    user_data[user_id] = {"type": call.data, "step": 1}
     await message.answer("عم أتأكد من الدفعة، لحظة من فضلك...")
     await send_lina_voice(message.chat.id, "لحظة من فضلك، جاري التأكد من عملية الدفع الخاصة بكم")
 
