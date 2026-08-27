@@ -7,14 +7,17 @@ import os
 API_TOKEN = os.getenv("BOT_TOKEN")
 WEB3_WALLET = os.getenv("WEB3_WALLET", "0xYourWalletAddressHere")
 WEB3_NETWORK = os.getenv("WEB3_NETWORK", "BSC / ERC20")
+BANK_IBAN = os.getenv("BANK_IBAN", "DE89 3704 0044 0532 2013 00")
 
 logging.basicConfig(level=logging.INFO)
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
 
+# قواميس التتبع السياقي والحالات (الحساسات البرمجية)
+user_states = {}
 user_data = {}
-user_ledger = {}  # سجل محاسبي رقمي مؤقت لتسجيل المعاملات والفواتير آلياً
+user_ledger = {}  # السجل المحاسبي الرقمي للعمليات
 
 BLOCKED_COUNTRIES = ["ru", "ir"]
 
@@ -41,7 +44,8 @@ TRANSLATIONS = {
         "ledger_report": "📊 **السجل المحاسبي الرقمي والتقارير:**\n\n- إجمالي المعاملات المسجلة: {count}\n- الحالة القانونية: موثق رقمياً (أبيض 100%)\n- جاهز لاستخراج التقارير الضريبية للشركة.",
         "web3_voice": "لإتمام الطلب، يرجى دفع رسوم فتح الطلب وقدرها خمسين سنت فقط عبر العملات الرقمية.",
         "web3_text": "💳 **الدفع عبر العملات الرقمية (Web3):**\n\n📍 **العنوان:** `{wallet}`\n🌐 **الشبكة:** {network}\n💰 **المبلغ المطلوب:** 0.50 USDT\n\nبعد الدفع، يرجى إرسال رقم العملية (Tx Hash) الذي يبدأ بـ (0x...).",
-        "selected": "لقد اخترت: **{category}**.\n\nيرجى المتابعة لاختيار طريقة الدفع:",
+        "bank_text": "🏦 **الدفع عبر التحويل البنكي أو الآيبان:**\n\n📍 **IBAN:** `{iban}`\n💰 **المبلغ:** 0.50€\n\nيرجى إرسال إيصال التحويل بعد الإتمام.",
+        "selected": "لقد اخترت: **{category}**.\n\nيرجى المتابعة لاختيار طريقة الدفع (اكتب: عملة رقمية، أو تحويل بنكي):",
         "quick_reply": "أهلاً بك! كيف يمكنني مساعدتك اليوم؟ اختر من الأزرار أدناه:"
     },
     "en": {
@@ -66,108 +70,9 @@ TRANSLATIONS = {
         "ledger_report": "📊 **Digital Accounting Ledger:**\n\n- Total Logged Transactions: {count}\n- Status: Fully Verified (100% White)\n- Ready for tax reports.",
         "web3_voice": "To complete the order, please pay the opening fee of only fifty cents via cryptocurrencies.",
         "web3_text": "💳 **Payment via Crypto (Web3):**\n\n📍 **Address:** `{wallet}`\n🌐 **Network:** {network}\n💰 **Amount Required:** 0.50 USDT\n\nAfter payment, please send the transaction hash (Tx Hash) starting with (0x...).",
-        "selected": "You have selected: **{category}**.\n\nPlease proceed by choosing the payment method:",
+        "bank_text": "🏦 **Bank Transfer / IBAN Payment:**\n\n📍 **IBAN:** `{iban}`\n💰 **Amount:** 0.50€\n\nPlease send the receipt after transfer.",
+        "selected": "You have selected: **{category}**.\n\nPlease proceed by choosing the payment method (Type: crypto, or bank transfer):",
         "quick_reply": "Hello! How can I help you today? Choose from the buttons below:"
-    },
-    "fr": {
-        "welcome": "Bienvenue! Je suis Lina\nSystème comptable numérique.",
-        "voice_welcome": "Bienvenue, veuillez choisir une option.",
-        "blocked": "Désolé, ce bot n'est pas disponible dans votre pays.",
-        "real_estate": "Immobilier",
-        "cars": "Voitures",
-        "services": "Services",
-        "bills": "💳 Factures",
-        "ledger": "📊 Registre comptable",
-        "containers": "Conteneurs",
-        "support": "📞 Support",
-        "sub": "Abonnement 2,99€",
-        "web3": "Paiement Crypto 0,50€",
-        "bills_menu": "💳 **Service de facturation:**",
-        "bill_elec": "⚡ Électricité",
-        "bill_water": "💧 Eau",
-        "bill_phone": "📱 Téléphone",
-        "bill_tax": "🚗 Taxe",
-        "bill_selected": "✅ Demande enregistrée numériquement.",
-        "ledger_report": "📊 Registre comptable: {count} transactions.",
-        "web3_voice": "Veuillez payer les frais.",
-        "web3_text": "💳 **Paiement Crypto:** `{wallet}`",
-        "selected": "Vous avez sélectionné: **{category}**.",
-        "quick_reply": "Bonjour! Comment puis-je vous aider aujourd'hui? Choisissez parmi les boutons:"
-    },
-    "es": {
-        "welcome": "¡Bienvenido! Soy Lina\nSistema de contabilidad digital.",
-        "voice_welcome": "Bienvenido, elija una opción.",
-        "blocked": "Lo siento, este bot no está disponible en tu país.",
-        "real_estate": "Inmobiliaria",
-        "cars": "Coches",
-        "services": "Servicios",
-        "bills": "💳 Facturas",
-        "ledger": "📊 Libro Contable",
-        "containers": "Conteneurs",
-        "support": "📞 Soporte",
-        "sub": "Suscripción 2.99€",
-        "web3": "Pago Cripto 0.50€",
-        "bills_menu": "💳 **Servicio de facturas:**",
-        "bill_elec": "⚡ Luz",
-        "bill_water": "💧 Agua",
-        "bill_phone": "📱 Teléfono",
-        "bill_tax": "🚗 Impuesto",
-        "bill_selected": "✅ Solicitud registrada digitalmente.",
-        "ledger_report": "📊 Libro contable: {count} transacciones.",
-        "web3_voice": "Pague la tarifa.",
-        "web3_text": "💳 **Pago Cripto:** `{wallet}`",
-        "selected": "Has seleccionado: **{category}**.",
-        "quick_reply": "¡Hola! ¿Cómo puedo ayudarte hoy? Elige entre los botones:"
-    },
-    "it": {
-        "welcome": "Benvenuto! Sono Lina\nSistema di contabilità digitale.",
-        "voice_welcome": "Benvenuto, scegli un'opzione.",
-        "blocked": "Spiacenti, questo bot non è disponibile nel tuo paese.",
-        "real_estate": "Immobiliare",
-        "cars": "Auto",
-        "services": "Servizi",
-        "bills": "💳 Bollette",
-        "ledger": "📊 Registro Contabile",
-        "containers": "Contenitori",
-        "support": "📞 Supporto",
-        "sub": "Abbonamento 2,99€",
-        "web3": "Pagamento Cripto 0,50€",
-        "bills_menu": "💳 **Servizio bollette:**",
-        "bill_elec": "⚡ Luce",
-        "bill_water": "💧 Acqua",
-        "bill_phone": "📱 Telefono",
-        "bill_tax": "🚗 Tassa",
-        "bill_selected": "✅ Richiesta registrata digitalmente.",
-        "ledger_report": "📊 Registro contabile: {count} transazioni.",
-        "web3_voice": "Paga la commissione.",
-        "web3_text": "💳 **Pagamento Cripto:** `{wallet}`",
-        "selected": "Hai selezionato: **{category}**.",
-        "quick_reply": "Ciao! Come posso aiutarti oggi? Scegli tra i pulsanti:"
-    },
-    "de": {
-        "welcome": "Willkommen! Ich bin Lina\nDigitales Buchhaltungssystem.",
-        "voice_welcome": "Willkommen, wählen Sie eine Option.",
-        "blocked": "Entschuldigung, dieser Bot ist in Ihrem Land nicht verfügbar.",
-        "real_estate": "Immobilien",
-        "cars": "Autos",
-        "services": "Dienste",
-        "bills": "💳 Rechnungen",
-        "ledger": "📊 Buchhaltung",
-        "containers": "Container",
-        "support": "📞 Support",
-        "sub": "Abo 2,99€",
-        "web3": "Krypto-Zahlung 0,50€",
-        "bills_menu": "💳 **Rechnungsdienst:**",
-        "bill_elec": "⚡ Strom",
-        "bill_water": "💧 Wasser",
-        "bill_phone": "📱 Telefon",
-        "bill_tax": "🚗 Steuer",
-        "bill_selected": "✅ Anfrage digital protokolliert.",
-        "ledger_report": "📊 Buchhaltung: {count} Transaktionen.",
-        "web3_voice": "Zahlen Sie die Gebühr.",
-        "web3_text": "💳 **Krypto-Zahlung:** `{wallet}`",
-        "selected": "Sie haben ausgewählt: **{category}**.",
-        "quick_reply": "Hallo! Wie kann ich Ihnen heute helfen? Wählen Sie aus den Tasten:"
     }
 }
 
@@ -191,11 +96,15 @@ async def send_lina_voice(chat_id, text, lang='ar'):
 
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
+    user_id = message.from_user.id
     user_lang = message.from_user.language_code
     if user_lang in BLOCKED_COUNTRIES:
         lang = "en" if user_lang not in TRANSLATIONS else user_lang
         await message.answer(TRANSLATIONS[lang]["blocked"])
         return
+
+    # إعادة ضبط الحالة عند بدء محادثة جديدة
+    user_states[user_id] = "main_menu"
 
     lang = get_lang(message)
     t = TRANSLATIONS[lang]
@@ -215,16 +124,40 @@ async def send_welcome(message: types.Message):
     await send_lina_voice(message.chat.id, t["voice_welcome"], lang)
     await message.answer(t["welcome"], reply_markup=keyboard)
 
-# معالج الرسائل النصية الحرة: يرد فوراً ويظهر الأزرار تفاعلياً دون الحاجة لـ /start
+# معالج الرسائل الذكي المزود بحساسات سياقية تتبع خطوات المستخدم
 @dp.message_handler(lambda message: not message.text.startswith('/'))
-async def handle_any_text_message(message: types.Message):
+async def handle_smart_sensor(message: types.Message):
+    user_id = message.from_user.id
     user_lang = message.from_user.language_code
     if user_lang in BLOCKED_COUNTRIES:
         return
 
     lang = get_lang(message)
     t = TRANSLATIONS[lang]
-    
+    text = message.text.lower()
+
+    # استشعار الحالة الحالية للمستخدم
+    current_state = user_states.get(user_id, "main_menu")
+
+    # إذا كان المستخدم في حالة انتظار اختيار طريقة الدفع (مثلاً بعد أن اختار عقارات أو سيارات)
+    if current_state == "waiting_for_payment":
+        if any(w in text for w in ["عملة", "رقمية", "crypto", "usdt", "كريبتو", "عمله"]):
+            user_states[user_id] = "main_menu"  # إعادة تعيين الحالة
+            await send_lina_voice(message.chat.id, t["web3_voice"], lang)
+            await message.answer(
+                t["web3_text"].format(wallet=WEB3_WALLET, network=WEB3_NETWORK),
+                parse_mode="Markdown",
+            )
+            return
+        elif any(w in text for w in ["تحويل", "بنك", "آيبان", "iban", "bank"]):
+            user_states[user_id] = "main_menu"  # إعادة تعيين الحالة
+            await message.answer(
+                t["bank_text"].format(iban=BANK_IBAN),
+                parse_mode="Markdown",
+            )
+            return
+
+    # إذا كانت رسالة عادية جداً وليست ضمن سياق انتظار دفع
     keyboard = InlineKeyboardMarkup(row_width=2)
     keyboard.add(
         InlineKeyboardButton(t["real_estate"], callback_data="real_estate"),
@@ -241,7 +174,7 @@ async def handle_any_text_message(message: types.Message):
     await message.answer(t["quick_reply"], reply_markup=keyboard)
 
 @dp.callback_query_handler(lambda call: True)
-async def process(call: types.CallbackQuery) -> None:
+async def process_callbacks(call: types.CallbackQuery) -> None:
     user_id = call.from_user.id
     user_lang = call.from_user.language_code
     
@@ -254,6 +187,7 @@ async def process(call: types.CallbackQuery) -> None:
     await call.answer()
 
     if call.data == "web3":
+        user_states[user_id] = "main_menu"
         await send_lina_voice(call.message.chat.id, t["web3_voice"], lang)
         await call.message.answer(
             t["web3_text"].format(wallet=WEB3_WALLET, network=WEB3_NETWORK),
@@ -262,7 +196,8 @@ async def process(call: types.CallbackQuery) -> None:
         return
 
     if call.data == "view_ledger":
-        count = len(user_ledger)
+        user_states[user_id] = "main_menu"
+        count = len(user_ledger.get(user_id, []))
         await call.message.answer(
             t["ledger_report"].format(count=count),
             parse_mode="Markdown"
@@ -270,6 +205,7 @@ async def process(call: types.CallbackQuery) -> None:
         return
 
     if call.data == "bills_main":
+        user_states[user_id] = "main_menu"
         bills_keyboard = InlineKeyboardMarkup(row_width=2)
         bills_keyboard.add(
             InlineKeyboardButton(t["bill_elec"], callback_data="bill_elec"),
@@ -281,6 +217,7 @@ async def process(call: types.CallbackQuery) -> None:
         return
 
     if call.data.startswith("bill_"):
+        user_states[user_id] = "main_menu"
         bill_names = {
             "bill_elec": t["bill_elec"],
             "bill_water": t["bill_water"],
@@ -299,7 +236,9 @@ async def process(call: types.CallbackQuery) -> None:
         )
         return
 
-    user_data[user_id] = {"type": call.data, "step": 1}
+    # عندما يختار المستخدم قسماً (مثل عقارات، سيارات، إلخ)
+    user_data[user_id] = {"type": call.data}
+    user_states[user_id] = "waiting_for_payment"  # تعيين الحساس السياقي بانتظار طريقة الدفع
     
     category_names = {
         "real_estate": t["real_estate"],
