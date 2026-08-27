@@ -101,18 +101,97 @@ TRANSLATIONS = {
         "stripe_text": "🟢 <b>Secure Checkout (Stripe):</b>\n\nPrices dynamically adjusted.\n\n🔗 [Click here to pay]({url})",
         "web3_text": "🟢 <b>Web3 Crypto Payment:</b>\n\nTransfer the equivalent to your wallet:\n\n`{wallet}`",
         "quick_reply": "🟢 Welcome back to Lina bot. Choose your next action:"
+    },
+    "de": {
+        "welcome": "🟢 <b>Willkommen beim offiziellen Lina-Bot!</b>\n\n🟢 Live-Feedback-System aktiv.\n🟢 Mehrwährungsunterstützung aktiviert.\n\n✨ <i>Bitte wählen Sie einen Dienst aus:</i>",
+        "voice_welcome": "Willkommen beim Lina-Bot, bitte wählen Sie einen Dienst.",
+        "blocked": "Entschuldigung, der Service ist in Ihrer Region nicht verfügbar.",
+        "real_estate": "🟢 Immobilien 🟢",
+        "cars": "🟢 Automobil 🟢",
+        "services": "🟢 Allgemeine Dienstleistungen 🟢",
+        "ledger": "🟢 Buchhaltung 🟢",
+        "containers": "🟢 Container 🟢",
+        "support": "🟢 Digitaler Support 🟢",
+        "feedback": "🟢 Feedback / Beschwerde hinterlassen 🟢",
+        "sub": "🟢 VIP-Abo ({price}) 🟢",
+        "web3": "🟢 Krypto ({price}) 🟢",
+        "bill_elec": "🟢 Stromrechnung 🟢",
+        "bill_water": "🟢 Wasserrechnung 🟢",
+        "bill_phone": "🟢 Telefonrechnung 🟢",
+        "bill_tax": "🟢 Kfz-Steuer 🟢",
+        "payment_prompt": "🟢 <b> Zahlungsbestätigung:</b>\n\nAusgewählt: <b>{item}</b>\n\nKlicken Sie unten, um sicher fortzufahren:",
+        "feedback_prompt": "🟢 Bitte geben Sie Ihr Feedback oder Ihre Beschwerde ein. Es wird direkt an die Verwaltung gesendet:",
+        "feedback_thanks": "🟢 Feedback erfolgreich gesendet! Vielen Dank.",
+        "ledger_report": "🟢 <b>Bericht:</b>\n\n- Protokollierte Einträge: {count}\n- Status: Verifiziert.",
+        "stripe_text": "🟢 <b>Sichere Kasse (Stripe):</b>\n\nPreise dynamisch angepasst.\n\n🔗 [Hier bezahlen]({url})",
+        "web3_text": "🟢 <b>Web3 Krypto-Zahlung:</b>\n\nÜberweisen Sie den Gegenwert an die Wallet:\n\n`{wallet}`",
+        "quick_reply": "🟢 Willkommen zurück beim Lina-Bot. Wählen Sie Ihre nächste Aktion:"
+    },
+    "fr": {
+        "welcome": "🟢 <b>Bienvenue sur le bot officiel de Lina !</b>\n\n🟢 Système de commentaires en direct actif.\n🟢 Prise en charge de plusieurs devises.\n\n✨ <i>Veuillez sélectionner un service :</i>",
+        "voice_welcome": "Bienvenue sur le bot Lina, veuillez choisir un service.",
+        "blocked": "Désolé, service non disponible dans votre région.",
+        "real_estate": "🟢 Immobilier 🟢",
+        "cars": "🟢 Automobile 🟢",
+        "services": "🟢 Services généraux 🟢",
+        "ledger": "🟢 Grand livre comptable 🟢",
+        "containers": "🟢 Conteneurs 🟢",
+        "support": "🟢 Support numérique 🟢",
+        "feedback": "🟢 Laisser un commentaire / problème 🟢",
+        "sub": "🟢 Abonnement VIP ({price}) 🟢",
+        "web3": "🟢 Crypto ({price}) 🟢",
+        "bill_elec": "🟢 Électricité 🟢",
+        "bill_water": "🟢 Eau 🟢",
+        "bill_phone": "🟢 Téléphone 🟢",
+        "bill_tax": "🟢 Taxe automobile 🟢",
+        "payment_prompt": "🟢 <b>Confirmation de paiement :</b>\n\nSélectionné : <b>{item}</b>\n\nPour continuer en toute sécurité, veuillez cliquer ci-dessous :",
+        "feedback_prompt": "🟢 Veuillez saisir vos commentaires ou réclamation. Ils seront envoyés directement à la direction :",
+        "feedback_thanks": "🟢 Commentaire envoyé avec succès ! Merci.",
+        "ledger_report": "🟢 <b>Rapport du grand livre :</b>\n\n- Entrées enregistrées : {count}\n- Statut : Vérifié.",
+        "stripe_text": "🟢 <b>Paiement sécurisé (Stripe) :</b>\n\nPrix ajustés dynamiquement.\n\n🔗 [Cliquez ici pour payer]({url})",
+        "web3_text": "🟢 <b>Paiement Crypto Web3 :</b>\n\nTransférez l'équivalent sur votre portefeuille :\n\n`{wallet}`",
+        "quick_reply": "🟢 Bon retour sur le bot Lina. Choisissez votre prochaine action :"
+    },
+    "es": {
+        "welcome": "🟢 <b>¡Bienvenido al bot oficial de Lina!</b>\n\n🟢 Sistema de comentarios en vivo activo.\n🟢 Soporte multidivisa habilitado.\n\n✨ <i>Por favor seleccione un servicio:</i>",
+        "voice_welcome": "Bienvenido al bot de Lina, elija un servicio.",
+        "blocked": "Lo sentimos, el servicio no está disponible en tu región.",
+        "real_estate": "🟢 Inmobiliaria 🟢",
+        "cars": "🟢 Automoción 🟢",
+        "services": "🟢 Servicios generales 🟢",
+        "ledger": "🟢 Libro contable 🟢",
+        "containers": "🟢 Contenedores 🟢",
+        "support": "🟢 Soporte digital 🟢",
+        "feedback": "🟢 Dejar comentarios / Incidencia 🟢",
+        "sub": "🟢 Sub VIP ({price}) 🟢",
+        "web3": "🟢 Cripto ({price}) 🟢",
+        "bill_elec": "🟢 Electricidad 🟢",
+        "bill_water": "🟢 Agua 🟢",
+        "bill_phone": "🟢 Teléfono 🟢",
+        "bill_tax": "🟢 Impuesto de autos 🟢",
+        "payment_prompt": "🟢 <b>Confirmación de pago:</b>\n\nSeleccionado: <b>{item}</b>\n\nPara continuar de forma segura, haga clic a continuación:",
+        "feedback_prompt": "🟢 Escriba sus comentarios o reclamación. Se enviará directamente a la gerencia:",
+        "feedback_thanks": "🟢 ¡Comentarios enviados con éxito! Gracias.",
+        "ledger_report": "🟢 <b>Informe del libro mayor:</b>\n\n- Entradas registradas: {count}\n- Estado: Verificado.",
+        "stripe_text": "🟢 <b>Pago seguro (Stripe):</b>\n\nPrecios ajustados dinámicamente.\n\n🔗 [Haga clic aquí para pagar]({url})",
+        "web3_text": "🟢 <b>Pago Cripto Web3:</b>\n\nTransfiera el equivalente a su billetera:\n\n`{wallet}`",
+        "quick_reply": "🟢 Bienvenido de nuevo al bot de Lina. Elija su próxima acción:"
     }
 }
 
 def get_lang(message_or_call):
     code = message_or_call.from_user.language_code
-    if code in TRANSLATIONS:
-        return code
-    return "en"
+    if code:
+        code = code.lower()
+        for lang in TRANSLATIONS:
+            if code.startswith(lang):
+                return lang
+    return "en" # اللغة الافتراضية إذا لم تتطابق
 
 async def send_lina_voice(chat_id, text, lang='ar'):
     try:
-        voice_lang = 'ar' if lang == 'ar' else 'en'
+        # تحديد لغة الصوت بناءً على لغة المستخدم المتاحة في gTTS
+        voice_lang = lang if lang in ['ar', 'en', 'de', 'fr', 'es'] else 'en'
         tts = gTTS(text=text, lang=voice_lang, slow=False)
         voice_path = "lina_voice.mp3"
         tts.save(voice_path)
@@ -146,7 +225,7 @@ async def send_welcome(message: types.Message):
     user_id = message.from_user.id
     user_lang = message.from_user.language_code
     if user_lang in BLOCKED_COUNTRIES:
-        lang = "en" if user_lang not in TRANSLATIONS else user_lang
+        lang = get_lang(message)
         await message.answer(TRANSLATIONS[lang]["blocked"])
         return
 
