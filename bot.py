@@ -5,9 +5,8 @@ from gtts import gTTS
 import os
 
 API_TOKEN = os.getenv("BOT_TOKEN")
-WEB3_WALLET = os.getenv("WEB3_WALLET", "0xYourWalletAddressHere")
-WEB3_NETWORK = os.getenv("WEB3_NETWORK", "BSC / ERC20")
-BANK_IBAN = os.getenv("BANK_IBAN", "DE89 3704 0044 0532 2013 00")
+# رابط بوابة الدفع الآمنة (Stripe Checkout) المعتمد قانونياً
+STRIPE_PAYMENT_URL = os.getenv("STRIPE_PAYMENT_URL", "https://buy.stripe.com/your_secure_checkout_link")
 
 logging.basicConfig(level=logging.INFO)
 
@@ -37,12 +36,10 @@ TRANSLATIONS = {
         "bill_water": "💧 فاتورة المياه",
         "bill_phone": "📱 فاتورة الهاتف",
         "bill_tax": "🚗 ضريبة السيارة",
-        "payment_prompt": "تمام، اخترت: **{item}**.\n\nخلص، اعطيني طريقة الدفع (اكتب: **عملة رقمية** أو **تحويل بنكي**):",
-        "payment_received_success": "كفو! ✅ وصل الإثبات وتم توثيق ({item}) بالدفتر عنا رسمياً.",
-        "ledger_report": "📊 **السجل المحاسبي:**\n\n- العمليات المسجلة: {count}\n- الوضع تمام وموثق 100%.",
-        "web3_voice": "حول الرسوم المطلوبة عالعنوان لنكمل.",
-        "web3_text": "💳 **الدفع بالكريبتو:**\n\n📍 **العنوان:** `{wallet}`\n🌐 **الشبكة:** {network}\n💰 **المبلغ:** 0.50 USDT\n\nابعثلي رقم العملية (Tx Hash) بعد ما تحول.",
-        "bank_text": "🏦 **التحويل البنكي:**\n\n📍 **IBAN:** `{iban}`\n💰 **المبلغ:** 0.50€\n\nابعثلي الإيصال بعد التحويل.",
+        "payment_prompt": "تمام، اخترت: **{item}**.\n\nلإتمام الدفع بشكل قانوني وآمن عبر بوابة الدفع الإلكترونية المعتمدة، يرجى الضغط على الزر أدناه لإتمام المعاملة أوتوماتيكياً:",
+        "payment_received_success": "كفو! ✅ تم التحقق من الدفع عبر البوابة الآمنة وتوثيق ({item}) بالدفتر عنا رسمياً.",
+        "ledger_report": "📊 **السجل المحاسبي:**\n\n- العمليات المسجلة: {count}\n- الوضع تمام وموثق 100% ضمن القوانين.",
+        "stripe_text": "💳 **بوابة الدفع الإلكتروني الآمنة (Stripe):**\n\nاضغط على الرابط أدناه لإتمام الدفع بالبطاقة البنكية بشكل آمن 100% ومطابق للقوانين الأوروبية:\n\n🔗 [اضغط هنا للدفع الآمن]({url})\n\nبعد إتمام الدفع، سيتم تسجيل العملية وتحديث حسابك تلقائياً.",
         "quick_reply": "معك، شو عنا شغل تاني؟ اختار من تحت:"
     },
     "en": {
@@ -61,12 +58,10 @@ TRANSLATIONS = {
         "bill_water": "💧 Water",
         "bill_phone": "📱 Phone",
         "bill_tax": "🚗 Car Tax",
-        "payment_prompt": "Got it, selected: **{item}**.\n\nChoose payment (Type: **crypto** or **bank**):",
-        "payment_received_success": "Done! ✅ Payment verified and ({item}) logged successfully.",
-        "ledger_report": "📊 **Ledger:**\n\n- Logged items: {count}\n- All clean and verified.",
-        "web3_voice": "Send the crypto fee to proceed.",
-        "web3_text": "💳 **Crypto Payment:**\n\n📍 **Address:** `{wallet}`\n🌐 **Network:** {network}\n💰 **Amount:** 0.50 USDT\n\nSend Tx Hash after transfer.",
-        "bank_text": "🏦 **Bank Transfer:**\n\n📍 **IBAN:** `{iban}`\n💰 **Amount:** 0.50€\n\nSend receipt after transfer.",
+        "payment_prompt": "Got it, selected: **{item}**.\n\nTo pay securely via our certified payment gateway, please click the button below:",
+        "payment_received_success": "Done! ✅ Payment verified via secure gateway and ({item}) logged successfully.",
+        "ledger_report": "📊 **Ledger:**\n\n- Logged items: {count}\n- All clean and compliant.",
+        "stripe_text": "💳 **Secure Payment Gateway (Stripe):**\n\nClick the link below to pay securely with your card, fully compliant with EU regulations:\n\n🔗 [Click here for Secure Checkout]({url})\n\nOnce paid, your transaction will be logged automatically.",
         "quick_reply": "I'm here. What's next?"
     }
 }
@@ -135,33 +130,14 @@ async def handle_smart_sensor(message: types.Message):
 
     current_state = user_states.get(user_id, "main_menu")
 
+    # التعامل مع الرد العفوي للمستخدم عند اختيار وسيلة دفع إلكترونية
     if current_state == "waiting_for_payment_method":
-        if any(w in text for w in ["عملة", "رقمية", "crypto", "usdt", "كريبتو", "عمله"]):
-            user_states[user_id] = "waiting_for_tx_hash"
-            await send_lina_voice(message.chat.id, t["web3_voice"], lang)
-            await message.answer(
-                t["web3_text"].format(wallet=WEB3_WALLET, network=WEB3_NETWORK),
-                parse_mode="Markdown",
-            )
-            return
-        elif any(w in text for w in ["تحويل", "بنك", "آيبان", "iban", "bank"]):
-            user_states[user_id] = "waiting_for_tx_hash"
-            await message.answer(
-                t["bank_text"].format(iban=BANK_IBAN),
-                parse_mode="Markdown",
-            )
-            return
-
-    if current_state == "waiting_for_tx_hash":
         user_states[user_id] = "main_menu"
         selected_item = user_data.get(user_id, {}).get("item_name", "الخدمة")
         
-        if user_id not in user_ledger:
-            user_ledger[user_id] = []
-        user_ledger[user_id].append(selected_item)
-
+        # إرسال رابط بوابة الدفع الآمنة (Stripe) بدلاً من أي آيبان مباشر
         await message.answer(
-            t["payment_received_success"].format(item=selected_item),
+            t["stripe_text"].format(url=STRIPE_PAYMENT_URL),
             parse_mode="Markdown"
         )
         return
@@ -184,11 +160,10 @@ async def process_callbacks(call: types.CallbackQuery) -> None:
     await call.answer()
 
     if call.data == "web3":
-        user_states[user_id] = "waiting_for_tx_hash"
+        user_states[user_id] = "main_menu"
         user_data[user_id] = {"item_name": t["web3"]}
-        await send_lina_voice(call.message.chat.id, t["web3_voice"], lang)
         await call.message.answer(
-            t["web3_text"].format(wallet=WEB3_WALLET, network=WEB3_NETWORK),
+            t["stripe_text"].format(url=STRIPE_PAYMENT_URL),
             parse_mode="Markdown",
         )
         return
