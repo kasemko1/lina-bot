@@ -7,12 +7,14 @@ import requests
 
 API_TOKEN = os.getenv("BOT_TOKEN")
 
-# رقم الآيدي الخاص بك المعتمد للإدارة وتلقي الملاحظات
+# رقم الآيدي الخاص بك للإدارة وتلقي الملاحظات
 ADMIN_CHAT_ID = 8807102611  
 
 # روابط Stripe والدفع
 STRIPE_SUB_URL = "https://buy.stripe.com/eVq9AS98hfsZ7Hu3LadZ600"       
 STRIPE_ONETIME_URL = "https://buy.stripe.com/evq8w03NXbcJ9PC3LadZ601" 
+
+# عنوان محفظة ميتا ماسك الخاصة بك (Polygon/Web3)
 METAMASK_WALLET_ADDRESS = "0x0e3c35B1242dB3f7E60E554266eB7be90706f355"
 
 logging.basicConfig(level=logging.INFO)
@@ -42,7 +44,7 @@ def get_converted_prices():
 
 TRANSLATIONS = {
     "ar": {
-        "welcome": "🟢 <b>أهلاً بك في بوت لينا الرسمي (منصة الأعمال الذكية)!</b>\n\nاختر الخدمة المطلوبة أدناه:",
+        "welcome": "🟢 <b>أهلاً بك في بوت لينا الرسمي (منصة الأعمال الذكية)!</b>\n\nاختر الخدمة أو طريقة الدفع المطلوبة أدناه:",
         "voice_welcome": "أهلاً بك في بوت لينا، منصة الأعمال والتنسيق التجاري.",
         "blocked": "عذراً، الخدمة غير متاحة في منطقتك.",
         "real_estate": "🟢 عقارات دولية 🟢",
@@ -52,19 +54,19 @@ TRANSLATIONS = {
         "containers": "🟢 الشحن والكونتينرات 🟢",
         "support": "🟢 الدعم الفني 🟢",
         "feedback": "🟢 ترك ملاحظة أو شكوى 🟢",
-        "sub": "🟢 اشتراك VIP (€2.99) 🟢",
-        "web3": "🟢 دفع رقمي (€0.50) 🟢",
+        "sub": "🟢 اشتراك VIP (€2.99 ستريب) 🟢",
+        "web3": "🟢 دفع رقمي ميتاماسك (€0.50) 🟢", # زر محفظة بوليجون/ميتاماسك
         "bill_elec": "🟢 فاتورة الكهرباء 🟢",
         "bill_water": "🟢 فاتورة المياه 🟢",
         "bill_phone": "🟢 فاتورة الاتصالات 🟢",
         "bill_tax": "🟢 ضريبة المركبات 🟢",
-        "payment_prompt": "🟢 <b>تأكيد العملية (€0.50):</b>\n\nلقد اخترت: <b>{item}</b>",
+        "payment_prompt": "🟢 <b>تأكيد العملية عبر ستريب (€0.50):</b>\n\nلقد اخترت: <b>{item}</b>",
         "feedback_prompt": "🟢 تفضل يا غالي، اكتب ملاحظتك أو شكواك للإدارة:",
         "feedback_thanks": "🟢 تم إرسال ملاحظتك بنجاح للإدارة!",
         "ledger_report": "🟢 <b>السجل المحاسبي:</b> الحركات المسجلة: {count}",
         "stripe_text": "🟢 <b>بوابة الدفع (اشتراك شهري €2.99):</b>\n\n🔗 [اضغط هنا للدفع بالبطاقة]({url})",
-        "web3_text": "🟢 <b>دفع عبر الكريبتو (€0.50):</b>\n\n`{wallet}`",
-        "quick_reply": "🟢 مرحباً بك مجدداً. اختر إحدى الخدمات:"
+        "web3_text": "🟢 <b>دفع عبر محفظة بوليجون / ميتاماسك (خدمة فردية €0.50):</b>\n\nانسخ العنوان أدناه للتحويل:\n`{wallet}`",
+        "quick_reply": "🟢 مرحباً بك مجدداً. اختر إحدى الخدمات أو طرق الدفع:"
     },
     "en": {
         "welcome": "🟢 <b>Welcome to Lina's Official Bot (Business Hub)!</b>",
@@ -77,8 +79,8 @@ TRANSLATIONS = {
         "containers": "🟢 Containers 🟢",
         "support": "🟢 Digital Support 🟢",
         "feedback": "🟢 Leave Feedback 🟢",
-        "sub": "🟢 VIP Sub (€2.99) 🟢",
-        "web3": "🟢 Crypto (€0.50) 🟢",
+        "sub": "🟢 VIP Sub (€2.99 Stripe) 🟢",
+        "web3": "🟢 Crypto Metamask (€0.50) 🟢",
         "bill_elec": "🟢 Electricity 🟢",
         "bill_water": "🟢 Water 🟢",
         "bill_phone": "🟢 Phone 🟢",
@@ -88,7 +90,7 @@ TRANSLATIONS = {
         "feedback_thanks": "🟢 Feedback sent!",
         "ledger_report": "🟢 <b>Ledger:</b> {count}",
         "stripe_text": "🟢 🔗 [Pay]({url})",
-        "web3_text": "🟢 `{wallet}`",
+        "web3_text": "🟢 <b>Polygon/Metamask Wallet:</b>\n`{wallet}`",
         "quick_reply": "🟢 Welcome back:"
     }
 }
@@ -115,7 +117,6 @@ async def send_lina_voice(chat_id, text, lang='ar'):
         logging.error(f"Voice error: {e}")
 
 def get_main_keyboard(t):
-    prices = get_converted_prices()
     keyboard = InlineKeyboardMarkup(row_width=2)
     keyboard.add(
         InlineKeyboardButton(t["real_estate"], callback_data="real_estate"),
@@ -129,7 +130,7 @@ def get_main_keyboard(t):
         InlineKeyboardButton(t["services"], callback_data="services"),
         InlineKeyboardButton(t["containers"], callback_data="containers"),
         InlineKeyboardButton(t["sub"], callback_data="sub"),
-        InlineKeyboardButton(t["web3"], callback_data="web3")
+        InlineKeyboardButton(t["web3"], callback_data="web3")  # تم إعادة زر محفظة بوليجون هنا
     )
     return keyboard
 
@@ -144,7 +145,7 @@ async def send_welcome(message: types.Message):
     lang = get_lang(message)
     t = TRANSLATIONS[lang]
     
-    await send_lina_voice(message.chat.id, t["voice_welcome"], lang)
+    await send_lina_voice(message.chat.id, t["voice_voice_welcome"] if "voice_voice_welcome" in t else t["voice_welcome"], lang)
     await message.answer(t["welcome"], reply_markup=get_main_keyboard(t), parse_mode="HTML")
 
 @dp.message_handler(lambda message: not message.text.startswith('/'))
@@ -188,6 +189,7 @@ async def process_callbacks(call: types.CallbackQuery) -> None:
         await call.message.answer(t["feedback_prompt"], parse_mode="HTML")
         return
 
+    # إظهار عنوان محفظة بوليجون عند النقر على زر الكريبتو
     if call.data == "web3":
         user_states[user_id] = "main_menu"
         await call.message.answer(t["web3_text"].format(wallet=METAMASK_WALLET_ADDRESS), parse_mode="Markdown")
