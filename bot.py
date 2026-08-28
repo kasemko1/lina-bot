@@ -1,4 +1,4 @@
-Import logging
+import logging
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import os
@@ -131,7 +131,6 @@ def get_main_keyboard(t, user_id, bot_username=""):
         InlineKeyboardButton(t["web3"], callback_data="web3")
     )
     
-    # إضافة زر مشاركة مباشر مع أصدقائك عبر رابط تليجرام المخصص للمشاركة
     if bot_username:
         share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}&text={t['share_text']}"
         keyboard.add(InlineKeyboardButton(t["share_bot"], url=share_url))
