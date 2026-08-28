@@ -1,9 +1,7 @@
 import logging
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from gtts import gTTS
 import os
-import requests
 
 API_TOKEN = os.getenv("BOT_TOKEN")
 
@@ -18,15 +16,14 @@ dp = Dispatcher(bot)
 user_states = {}
 user_data = {}
 user_ledger = {}
-user_interactions = set()  # تتبع المستخدمين الفريدين للتحليلات والإحصائيات
-action_counter = {"clicks": 0}  # عداد التفاعلات واستخدام الخدمات
+user_interactions = set()  # تتبع المستخدمين الفريدين للإحصائيات
+action_counter = {"clicks": 0}  # عداد التفاعلات والنقرات
 
 BLOCKED_COUNTRIES = ["ru", "ir"]
 
 TRANSLATIONS = {
     "ar": {
-        "welcome": "🟢 <b>أهلاً بك في بوت لينا (النسخة التجريبية - Test Version)!</b>\n\nاختر الخدمة أدناه لاختبار أداء المنصة:",
-        "voice_welcome": "أهلاً بك، هذا هو بوت لينا في مرحلة الاختبار والتجربة المجانية.",
+        "welcome": "🟢 <b>أهلاً بك في بوت لينا (النسخة التجريبية - Test Version)!</b>\n\nهذا البوت في مرحلة الاختبار والتجربة المجانية. اختر الخدمة أدناه للاختبار:",
         "blocked": "عذراً، الخدمة غير متاحة في منطقتك.",
         "real_estate": "🟢 عقارات دولية (تجريبي) 🟢",
         "cars": "🟢 قطاع السيارات (تجريبي) 🟢",
@@ -42,17 +39,16 @@ TRANSLATIONS = {
         "bill_water": "🟢 فاتورة المياه (تجريبي) 🟢",
         "bill_phone": "🟢 فاتورة الاتصالات (تجريبي) 🟢",
         "bill_tax": "🟢 ضريبة المركبات (تجريبي) 🟢",
-        "test_notice": "⚠️ <b>ملاحظة تجريبية:</b>\n\nلقد اخترت خدمة: <b>{item}</b>.\nهذا البوت في مرحلة الاختبار التجريبي المجاني (Test-Modus) ولا يتم تقاضي أو دفع أي أموال حقيقية حالياً.",
+        "test_notice": "⚠️ <b>ملاحظة تجريبية (Test-Modus):</b>\n\nلقد اخترت خدمة: <b>{item}</b>.\nهذا البوت في مرحلة الاختبار التجريبي المجاني ولا يتم دفع أي أموال حقيقية حالياً.",
         "feedback_prompt": "🟢 تفضل يا غالي، اكتب ملاحظتك أو شكواك للإدارة:",
         "feedback_thanks": "🟢 تم إرسال ملاحظتك بنجاح للإدارة!",
         "ledger_report": "🟢 <b>السجل المحاسبي التجريبي:</b> الحركات المسجلة: {count}",
         "test_payment_text": "🧪 <b>بوابة الدفع التجريبية:</b>\n\nالخدمات المالية مغلقة حالياً لأن البوت يخضع للاختبار المجاني وسيتم تفعيلها رسمياً بعد التسجيل النهائي للشركة.",
-        "stats_report": "📊 <b>إحصائيات تفاعل البوت:</b>\n\n👥 عدد المستخدمين الكلي: <b>{users}</b>\n⚡ عدد تفاعلات النقر والخدمات: <b>{clicks}</b>\n\n*(هذه العدادات ستساعدك مستقبلاً عند التشغيل الفعلي لمعرفة حجم المدفوعات والاستخدام).*",
-        "quick_reply": "🟢 مرحباً بك مجدداً. اختر إحدى الخدمات للتجربة:"
+        "stats_report": "📊 <b>إحصائيات تفاعل البوت:</b>\n\n👥 عدد المستخدمين الكلي: <b>{users}</b>\n⚡ عدد تفاعلات النقر والخدمات: <b>{clicks}</b>",
+        "quick_reply": "🟢 مرحباً بك مجدداً في نسخة التجربة. اختر إحدى الخدمات:"
     },
     "de": {
-        "welcome": "🟢 <b>Willkommen beim Lina Bot (Testversion)!</b>\n\nWählen Sie unten einen Dienst aus, um die Plattform zu testen:",
-        "voice_welcome": "Willkommen, dies ist der Lina Bot in der Testphase.",
+        "welcome": "🟢 <b>Willkommen beim Lina Bot (Testversion)!</b>\n\nDieser Bot befindet sich in der Testphase. Wählen Sie unten einen Dienst aus:",
         "blocked": "Entschuldigung, dieser Dienst ist in Ihrer Region nicht verfügbar.",
         "real_estate": "🟢 Internationale Immobilien (Test) 🟢",
         "cars": "🟢 Automobilsektor (Test) 🟢",
@@ -68,17 +64,16 @@ TRANSLATIONS = {
         "bill_water": "🟢 Wasserrechnung (Test) 🟢",
         "bill_phone": "🟢 Telefonrechnung (Test) 🟢",
         "bill_tax": "🟢 Kfz-Steuer (Test) 🟢",
-        "test_notice": "⚠️ <b>Test-Hinweis:</b>\n\nSie haben gewählt: <b>{item}</b>.\nDieser Bot befindet sich in der kostenlosen Testphase. Es werden derzeit keine echten Zahlungen durchgeführt.",
+        "test_notice": "⚠️ <b>Test-Hinweis (Test-Modus):</b>\n\nSie haben gewählt: <b>{item}</b>.\nDieser Bot befindet sich in der kostenlosen Testphase. Keine echten Zahlungen.",
         "feedback_prompt": "🟢 Bitte geben Sie Ihr Feedback ein:",
         "feedback_thanks": "🟢 Vielen Dank! Ihr Feedback wurde gesendet.",
         "ledger_report": "🟢 <b>Test-Buchhaltung:</b> Registrierte Einträge: {count}",
-        "test_payment_text": "🧪 <b>Test-Zahlungssystem:</b>\n\nFinanzdienste sind derzeit deaktiviert, da sich der Bot in der kostenlosen Testphase befindet.",
+        "test_payment_text": "🧪 <b>Test-Zahlungssystem:</b>\n\nFinanzdienste sind derzeit deaktiviert während der Testphase.",
         "stats_report": "📊 <b>Bot-Statistiken:</b>\n\n👥 Gesamtzahl der Benutzer: <b>{users}</b>\n⚡ Gesamtzahl der Interaktionen: <b>{clicks}</b>",
-        "quick_reply": "🟢 Willkommen zurück. Wählen Sie eine Option zum Testen:"
+        "quick_reply": "🟢 Willkommen zurück im Test-Modus. Wählen Sie eine Option:"
     },
     "en": {
-        "welcome": "🟢 <b>Welcome to Lina Bot (Test Version)!</b>\n\nSelect a service below to test the platform:",
-        "voice_welcome": "Welcome, this is Lina bot in the free test phase.",
+        "welcome": "🟢 <b>Welcome to Lina Bot (Test Version)!</b>\n\nThis bot is in a free test mode. Select a service below:",
         "blocked": "Region blocked.",
         "real_estate": "🟢 Real Estate (Test) 🟢",
         "cars": "🟢 Automotive (Test) 🟢",
@@ -94,13 +89,13 @@ TRANSLATIONS = {
         "bill_water": "🟢 Water (Test) 🟢",
         "bill_phone": "🟢 Phone (Test) 🟢",
         "bill_tax": "🟢 Car Tax (Test) 🟢",
-        "test_notice": "⚠️ <b>Test Notice:</b>\n\nYou selected: <b>{item}</b>.\nThis bot is in a free test mode. No real payments are processed.",
+        "test_notice": "⚠️ <b>Test Notice (Test-Modus):</b>\n\nYou selected: <b>{item}</b>.\nThis bot is in a free test mode. No real payments.",
         "feedback_prompt": "🟢 Type your feedback:",
         "feedback_thanks": "🟢 Feedback sent!",
         "ledger_report": "🟢 <b>Test Ledger:</b> {count}",
-        "test_payment_text": "🧪 <b>Test Payment:</b>\n\nPayment services are currently disabled during the free testing phase.",
+        "test_payment_text": "🧪 <b>Test Payment:</b>\n\nPayment services are currently disabled during testing.",
         "stats_report": "📊 <b>Bot Statistics:</b>\n\n👥 Total Users: <b>{users}</b>\n⚡ Total Interactions: <b>{clicks}</b>",
-        "quick_reply": "🟢 Welcome back:"
+        "quick_reply": "🟢 Welcome back to test mode:"
     }
 }
 
@@ -112,18 +107,6 @@ def get_lang(message_or_call):
             if code.startswith(lang):
                 return lang
     return "en"
-
-async def send_lina_voice(chat_id, text, lang='ar'):
-    try:
-        voice_lang = lang if lang in ['ar', 'en', 'de', 'fr', 'es', 'it'] else 'en'
-        tts = gTTS(text=text, lang=voice_lang, slow=False)
-        voice_path = "lina_voice.mp3"
-        tts.save(voice_path)
-        with open(voice_path, 'rb') as voice:
-            await bot.send_voice(chat_id, voice)
-        os.remove(voice_path)
-    except Exception as e:
-        logging.error(f"Voice error: {e}")
 
 def get_main_keyboard(t, user_id):
     keyboard = InlineKeyboardMarkup(row_width=2)
@@ -141,7 +124,6 @@ def get_main_keyboard(t, user_id):
         InlineKeyboardButton(t["sub"], callback_data="sub"),
         InlineKeyboardButton(t["web3"], callback_data="web3")
     )
-    # إضافة زر الإحصائيات خصيصاً لك أنت كمدير (Admin) فقط ولا يظهر لأحد غيرك
     if user_id == ADMIN_CHAT_ID:
         keyboard.add(InlineKeyboardButton(t["admin_stats"], callback_data="admin_stats"))
         
@@ -154,12 +136,11 @@ async def send_welcome(message: types.Message):
         await message.answer(TRANSLATIONS[get_lang(message)]["blocked"])
         return
 
-    user_interactions.add(user_id)  # تسجيل المستخدم في العداد
+    user_interactions.add(user_id)
     user_states[user_id] = "main_menu"
     lang = get_lang(message)
     t = TRANSLATIONS[lang]
     
-    await send_lina_voice(message.chat.id, t["voice_welcome"], lang)
     await message.answer(t["welcome"], reply_markup=get_main_keyboard(t, user_id), parse_mode="HTML")
 
 @dp.message_handler(lambda message: not message.text.startswith('/'))
@@ -198,7 +179,7 @@ async def process_callbacks(call: types.CallbackQuery) -> None:
     t = TRANSLATIONS[lang]
     await call.answer()
     
-    action_counter["clicks"] += 1  # زيادة عداد التفاعلات والنقرات
+    action_counter["clicks"] += 1
 
     if call.data == "admin_stats" and user_id == ADMIN_CHAT_ID:
         total_users = len(user_interactions)
