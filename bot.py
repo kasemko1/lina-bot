@@ -1,4 +1,4 @@
-import logging
+Import logging
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import os
@@ -32,6 +32,7 @@ TRANSLATIONS = {
         "containers": "🟢 الشحن والكونتينرات (تجريبي) 🟢",
         "support": "🟢 الدعم الفني 🟢",
         "feedback": "🟢 ترك ملاحظة أو شكوى 🟢",
+        "share_bot": "📤 شارك البوت مع أصدقائك 📤",
         "admin_stats": "📊 لوحة تحكم الإحصائيات 📊",
         "sub": "🧪 تجربة اشتراك VIP 🧪",
         "web3": "🧪 تجربة دفع ميتاماسك 🧪",
@@ -45,7 +46,8 @@ TRANSLATIONS = {
         "ledger_report": "🟢 <b>السجل المحاسبي التجريبي:</b> الحركات المسجلة: {count}",
         "test_payment_text": "🧪 <b>بوابة الدفع التجريبية:</b>\n\nالخدمات المالية مغلقة حالياً لأن البوت يخضع للاختبار المجاني وسيتم تفعيلها رسمياً بعد التسجيل النهائي للشركة.",
         "stats_report": "📊 <b>إحصائيات تفاعل البوت:</b>\n\n👥 عدد المستخدمين الكلي: <b>{users}</b>\n⚡ عدد تفاعلات النقر والخدمات: <b>{clicks}</b>",
-        "quick_reply": "🟢 مرحباً بك مجدداً في نسخة التجربة. اختر إحدى الخدمات:"
+        "quick_reply": "🟢 مرحباً بك مجدداً في نسخة التجربة. اختر إحدى الخدمات:",
+        "share_text": "🤖 تجربة ممتازة لبوت الذكاء الاصطناعي لينا (Lina AI Test-Bot). جربه الآن وانضم لمرحلة الاختبار:"
     },
     "de": {
         "welcome": "🟢 <b>Willkommen beim Lina Bot (Testversion)!</b>\n\nDieser Bot befindet sich in der Testphase. Wählen Sie unten einen Dienst aus:",
@@ -57,6 +59,7 @@ TRANSLATIONS = {
         "containers": "🟢 Versand & Container (Test) 🟢",
         "support": "🟢 Support 🟢",
         "feedback": "🟢 Feedback / Beschwerde 🟢",
+        "share_bot": "📤 Bot mit Freunden teilen 📤",
         "admin_stats": "📊 Admin Statistik 📊",
         "sub": "🧪 VIP-Abo (Test) 🧪",
         "web3": "🧪 MetaMask-Zahlung (Test) 🧪",
@@ -70,7 +73,8 @@ TRANSLATIONS = {
         "ledger_report": "🟢 <b>Test-Buchhaltung:</b> Registrierte Einträge: {count}",
         "test_payment_text": "🧪 <b>Test-Zahlungssystem:</b>\n\nFinanzdienste sind derzeit deaktiviert während der Testphase.",
         "stats_report": "📊 <b>Bot-Statistiken:</b>\n\n👥 Gesamtzahl der Benutzer: <b>{users}</b>\n⚡ Gesamtzahl der Interaktionen: <b>{clicks}</b>",
-        "quick_reply": "🟢 Willkommen zurück im Test-Modus. Wählen Sie eine Option:"
+        "quick_reply": "🟢 Willkommen zurück im Test-Modus. Wählen Sie eine Option:",
+        "share_text": "🤖 Entdecken Sie den Lina KI Test-Bot und probieren Sie ihn jetzt aus:"
     },
     "en": {
         "welcome": "🟢 <b>Welcome to Lina Bot (Test Version)!</b>\n\nThis bot is in a free test mode. Select a service below:",
@@ -82,6 +86,7 @@ TRANSLATIONS = {
         "containers": "🟢 Containers (Test) 🟢",
         "support": "🟢 Digital Support 🟢",
         "feedback": "🟢 Leave Feedback 🟢",
+        "share_bot": "📤 Share Bot with Friends 📤",
         "admin_stats": "📊 Admin Statistics 📊",
         "sub": "🧪 VIP Sub (Test) 🧪",
         "web3": "🧪 MetaMask (Test) 🧪",
@@ -95,7 +100,8 @@ TRANSLATIONS = {
         "ledger_report": "🟢 <b>Test Ledger:</b> {count}",
         "test_payment_text": "🧪 <b>Test Payment:</b>\n\nPayment services are currently disabled during testing.",
         "stats_report": "📊 <b>Bot Statistics:</b>\n\n👥 Total Users: <b>{users}</b>\n⚡ Total Interactions: <b>{clicks}</b>",
-        "quick_reply": "🟢 Welcome back to test mode:"
+        "quick_reply": "🟢 Welcome back to test mode:",
+        "share_text": "🤖 Try the Lina AI Test-Bot and check out its features:"
     }
 }
 
@@ -108,7 +114,7 @@ def get_lang(message_or_call):
                 return lang
     return "en"
 
-def get_main_keyboard(t, user_id):
+def get_main_keyboard(t, user_id, bot_username=""):
     keyboard = InlineKeyboardMarkup(row_width=2)
     keyboard.add(
         InlineKeyboardButton(t["real_estate"], callback_data="real_estate"),
@@ -124,6 +130,12 @@ def get_main_keyboard(t, user_id):
         InlineKeyboardButton(t["sub"], callback_data="sub"),
         InlineKeyboardButton(t["web3"], callback_data="web3")
     )
+    
+    # إضافة زر مشاركة مباشر مع أصدقائك عبر رابط تليجرام المخصص للمشاركة
+    if bot_username:
+        share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}&text={t['share_text']}"
+        keyboard.add(InlineKeyboardButton(t["share_bot"], url=share_url))
+        
     if user_id == ADMIN_CHAT_ID:
         keyboard.add(InlineKeyboardButton(t["admin_stats"], callback_data="admin_stats"))
         
@@ -141,7 +153,10 @@ async def send_welcome(message: types.Message):
     lang = get_lang(message)
     t = TRANSLATIONS[lang]
     
-    await message.answer(t["welcome"], reply_markup=get_main_keyboard(t, user_id), parse_mode="HTML")
+    bot_info = await bot.get_me()
+    bot_username = bot_info.username
+    
+    await message.answer(t["welcome"], reply_markup=get_main_keyboard(t, user_id, bot_username), parse_mode="HTML")
 
 @dp.message_handler(lambda message: not message.text.startswith('/'))
 async def handle_smart_sensor(message: types.Message):
@@ -166,7 +181,8 @@ async def handle_smart_sensor(message: types.Message):
         return
 
     user_states[user_id] = "main_menu"
-    await message.answer(t["quick_reply"], reply_markup=get_main_keyboard(t, user_id), parse_mode="HTML")
+    bot_info = await bot.get_me()
+    await message.answer(t["quick_reply"], reply_markup=get_main_keyboard(t, user_id, bot_info.username), parse_mode="HTML")
 
 @dp.callback_query_handler(lambda call: True)
 async def process_callbacks(call: types.CallbackQuery) -> None:
