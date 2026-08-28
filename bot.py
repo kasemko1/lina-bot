@@ -10,13 +10,6 @@ API_TOKEN = os.getenv("BOT_TOKEN")
 # رقم الآيدي الخاص بك للإدارة وتلقي الملاحظات
 ADMIN_CHAT_ID = 8807102611  
 
-# روابط Stripe والدفع
-STRIPE_SUB_URL = "https://buy.stripe.com/eVq9AS98hfsZ7Hu3LadZ600"       
-STRIPE_ONETIME_URL = "https://buy.stripe.com/evq8w03NXbcJ9PC3LadZ601" 
-
-# عنوان محفظة ميتا ماسك الخاصة بك (Polygon/Web3)
-METAMASK_WALLET_ADDRESS = "0x0e3c35B1242dB3f7E60E554266eB7be90706f355"
-
 logging.basicConfig(level=logging.INFO)
 
 bot = Bot(token=API_TOKEN)
@@ -28,69 +21,77 @@ user_ledger = {}
 
 BLOCKED_COUNTRIES = ["ru", "ir"]
 
-def get_converted_prices():
-    try:
-        response = requests.get("https://api.exchangerate-api.com/v4/latest/EUR", timeout=5)
-        data = response.json()
-        rates = data.get("rates", {})
-        usd_rate = rates.get("USD", 1.08)
-        gbp_rate = rates.get("GBP", 0.85)
-        return {
-            "sub": f"€2.99 (~${round(2.99 * usd_rate, 2)} USD)",
-            "onetime": f"€0.50 (~${round(0.50 * usd_rate, 2)} USD)"
-        }
-    except Exception:
-        return {"sub": "€2.99", "onetime": "€0.50"}
-
 TRANSLATIONS = {
     "ar": {
-        "welcome": "🟢 <b>أهلاً بك في بوت لينا الرسمي (منصة الأعمال الذكية)!</b>\n\nاختر الخدمة أو طريقة الدفع المطلوبة أدناه:",
-        "voice_welcome": "أهلاً بك في بوت لينا، منصة الأعمال والتنسيق التجاري.",
+        "welcome": "🟢 <b>أهلاً بك في بوت لينا (النسخة التجريبية - Test Version)!</b>\n\nاختر الخدمة أدناه لاختبار أداء المنصة:",
+        "voice_welcome": "أهلاً بك في النسخة التجريبية لبوت لينا، منصة الأعمال والتنسيق التجاري.",
         "blocked": "عذراً، الخدمة غير متاحة في منطقتك.",
-        "real_estate": "🟢 عقارات دولية 🟢",
-        "cars": "🟢 قطاع السيارات 🟢",
-        "services": "🟢 خدمات عامة 🟢",
+        "real_estate": "🟢 عقارات دولية (تجريبي) 🟢",
+        "cars": "🟢 قطاع السيارات (تجريبي) 🟢",
+        "services": "🟢 خدمات عامة (تجريبي) 🟢",
         "ledger": "🟢 السجل المحاسبي 🟢",
-        "containers": "🟢 الشحن والكونتينرات 🟢",
+        "containers": "🟢 الشحن والكونتينرات (تجريبي) 🟢",
         "support": "🟢 الدعم الفني 🟢",
         "feedback": "🟢 ترك ملاحظة أو شكوى 🟢",
-        "sub": "🟢 اشتراك VIP (€2.99 ستريب) 🟢",
-        "web3": "🟢 دفع رقمي ميتاماسك (€0.50) 🟢", # زر محفظة بوليجون/ميتاماسك
-        "bill_elec": "🟢 فاتورة الكهرباء 🟢",
-        "bill_water": "🟢 فاتورة المياه 🟢",
-        "bill_phone": "🟢 فاتورة الاتصالات 🟢",
-        "bill_tax": "🟢 ضريبة المركبات 🟢",
-        "payment_prompt": "🟢 <b>تأكيد العملية عبر ستريب (€0.50):</b>\n\nلقد اخترت: <b>{item}</b>",
+        "sub": "🧪 تجربة اشتراك VIP 🧪",
+        "web3": "🧪 تجربة دفع ميتاماسك 🧪",
+        "bill_elec": "🟢 فاتورة الكهرباء (تجريبي) 🟢",
+        "bill_water": "🟢 فاتورة المياه (تجريبي) 🟢",
+        "bill_phone": "🟢 فاتورة الاتصالات (تجريبي) 🟢",
+        "bill_tax": "🟢 ضريبة المركبات (تجريبي) 🟢",
+        "test_notice": "⚠️ <b>ملاحظة تجريبية:</b>\n\nلقد اخترت خدمة: <b>{item}</b>.\nهذا البوت في مرحلة الاختبار التجريبي المجاني (Test-Modus) ولا يتم تقاضي أو دفع أي أموال حقيقية حالياً.",
         "feedback_prompt": "🟢 تفضل يا غالي، اكتب ملاحظتك أو شكواك للإدارة:",
         "feedback_thanks": "🟢 تم إرسال ملاحظتك بنجاح للإدارة!",
-        "ledger_report": "🟢 <b>السجل المحاسبي:</b> الحركات المسجلة: {count}",
-        "stripe_text": "🟢 <b>بوابة الدفع (اشتراك شهري €2.99):</b>\n\n🔗 [اضغط هنا للدفع بالبطاقة]({url})",
-        "web3_text": "🟢 <b>دفع عبر محفظة بوليجون / ميتاماسك (خدمة فردية €0.50):</b>\n\nانسخ العنوان أدناه للتحويل:\n`{wallet}`",
-        "quick_reply": "🟢 مرحباً بك مجدداً. اختر إحدى الخدمات أو طرق الدفع:"
+        "ledger_report": "🟢 <b>السجل المحاسبي التجريبي:</b> الحركات المسجلة: {count}",
+        "test_payment_text": "🧪 <b>بوابة الدفع التجريبية:</b>\n\nالخدمات المالية مغلقة حالياً لأن البوت يخضع للاختبار المجاني وسيتم تفعيلها رسمياً بعد التسجيل النهائي للشركة.",
+        "quick_reply": "🟢 مرحباً بك مجدداً. اختر إحدى الخدمات للتجربة:"
+    },
+    "de": {
+        "welcome": "🟢 <b>Willkommen bei Lina Bot (Testversion)!</b>\n\nWählen Sie unten einen Dienst aus, um die Plattform zu testen:",
+        "voice_welcome": "Willkommen zur Testversion von Lina Bot.",
+        "blocked": "Entschuldigung, dieser Dienst ist in Ihrer Region nicht verfügbar.",
+        "real_estate": "🟢 Internationale Immobilien (Test) 🟢",
+        "cars": "🟢 Automobilsektor (Test) 🟢",
+        "services": "🟢 Allgemeine Dienste (Test) 🟢",
+        "ledger": "🟢 Buchhaltungsbuch 🟢",
+        "containers": "🟢 Versand & Container (Test) 🟢",
+        "support": "🟢 Support 🟢",
+        "feedback": "🟢 Feedback / Beschwerde 🟢",
+        "sub": "🧪 VIP-Abo (Test) 🧪",
+        "web3": "🧪 MetaMask-Zahlung (Test) 🧪",
+        "bill_elec": "🟢 Stromrechnung (Test) 🟢",
+        "bill_water": "🟢 Wasserrechnung (Test) 🟢",
+        "bill_phone": "🟢 Telefonrechnung (Test) 🟢",
+        "bill_tax": "🟢 Kfz-Steuer (Test) 🟢",
+        "test_notice": "⚠️ <b>Test-Hinweis:</b>\n\nSie haben gewählt: <b>{item}</b>.\nDieser Bot befindet sich in der kostenlosen Testphase. Es werden derzeit keine echten Zahlungen durchgeführt.",
+        "feedback_prompt": "🟢 Bitte geben Sie Ihr Feedback ein:",
+        "feedback_thanks": "🟢 Vielen Dank! Ihr Feedback wurde gesendet.",
+        "ledger_report": "🟢 <b>Test-Buchhaltung:</b> Registrierte Einträge: {count}",
+        "test_payment_text": "🧪 <b>Test-Zahlungssystem:</b>\n\nFinanzdienste sind derzeit deaktiviert, da sich der Bot in der kostenlosen Testphase befindet.",
+        "quick_reply": "🟢 Willkommen zurück. Wählen Sie eine Option zum Testen:"
     },
     "en": {
-        "welcome": "🟢 <b>Welcome to Lina's Official Bot (Business Hub)!</b>",
-        "voice_welcome": "Welcome to Lina bot.",
+        "welcome": "🟢 <b>Welcome to Lina Bot (Test Version)!</b>\n\nSelect a service below to test the platform:",
+        "voice_welcome": "Welcome to the test version of Lina bot.",
         "blocked": "Region blocked.",
-        "real_estate": "🟢 Real Estate 🟢",
-        "cars": "🟢 Automotive 🟢",
-        "services": "🟢 General Services 🟢",
+        "real_estate": "🟢 Real Estate (Test) 🟢",
+        "cars": "🟢 Automotive (Test) 🟢",
+        "services": "🟢 General Services (Test) 🟢",
         "ledger": "🟢 Accounting Ledger 🟢",
-        "containers": "🟢 Containers 🟢",
+        "containers": "🟢 Containers (Test) 🟢",
         "support": "🟢 Digital Support 🟢",
         "feedback": "🟢 Leave Feedback 🟢",
-        "sub": "🟢 VIP Sub (€2.99 Stripe) 🟢",
-        "web3": "🟢 Crypto Metamask (€0.50) 🟢",
-        "bill_elec": "🟢 Electricity 🟢",
-        "bill_water": "🟢 Water 🟢",
-        "bill_phone": "🟢 Phone 🟢",
-        "bill_tax": "🟢 Car Tax 🟢",
-        "payment_prompt": "🟢 <b>Payment (€0.50):</b> <b>{item}</b>",
+        "sub": "🧪 VIP Sub (Test) 🧪",
+        "web3": "🧪 MetaMask (Test) 🧪",
+        "bill_elec": "🟢 Electricity (Test) 🟢",
+        "bill_water": "🟢 Water (Test) 🟢",
+        "bill_phone": "🟢 Phone (Test) 🟢",
+        "bill_tax": "🟢 Car Tax (Test) 🟢",
+        "test_notice": "⚠️ <b>Test Notice:</b>\n\nYou selected: <b>{item}</b>.\nThis bot is in a free test mode. No real payments are processed.",
         "feedback_prompt": "🟢 Type your feedback:",
         "feedback_thanks": "🟢 Feedback sent!",
-        "ledger_report": "🟢 <b>Ledger:</b> {count}",
-        "stripe_text": "🟢 🔗 [Pay]({url})",
-        "web3_text": "🟢 <b>Polygon/Metamask Wallet:</b>\n`{wallet}`",
+        "ledger_report": "🟢 <b>Test Ledger:</b> {count}",
+        "test_payment_text": "🧪 <b>Test Payment:</b>\n\nPayment services are currently disabled during the free testing phase.",
         "quick_reply": "🟢 Welcome back:"
     }
 }
@@ -130,7 +131,7 @@ def get_main_keyboard(t):
         InlineKeyboardButton(t["services"], callback_data="services"),
         InlineKeyboardButton(t["containers"], callback_data="containers"),
         InlineKeyboardButton(t["sub"], callback_data="sub"),
-        InlineKeyboardButton(t["web3"], callback_data="web3")  # تم إعادة زر محفظة بوليجون هنا
+        InlineKeyboardButton(t["web3"], callback_data="web3")
     )
     return keyboard
 
@@ -145,7 +146,7 @@ async def send_welcome(message: types.Message):
     lang = get_lang(message)
     t = TRANSLATIONS[lang]
     
-    await send_lina_voice(message.chat.id, t["voice_voice_welcome"] if "voice_voice_welcome" in t else t["voice_welcome"], lang)
+    await send_lina_voice(message.chat.id, t["voice_welcome"], lang)
     await message.answer(t["welcome"], reply_markup=get_main_keyboard(t), parse_mode="HTML")
 
 @dp.message_handler(lambda message: not message.text.startswith('/'))
@@ -163,7 +164,7 @@ async def handle_smart_sensor(message: types.Message):
         user_text = message.text
         user_name = message.from_user.full_name or "مستخدم مجهول"
         try:
-            admin_msg = f"🟢 **ملاحظة جديدة في بوت لينا:**\n\n👤 الاسم: {user_name}\n🆔 الآيدي: `{user_id}`\n\n💬 النص:\n_{user_text}_"
+            admin_msg = f"🟢 **ملاحظة جديدة في بوت لينا (تجريبي):**\n\n👤 الاسم: {user_name}\n🆔 الآيدي: `{user_id}`\n\n💬 النص:\n_{user_text}_"
             await bot.send_message(ADMIN_CHAT_ID, admin_msg, parse_mode="Markdown")
         except Exception as e:
             logging.error(f"Error: {e}")
@@ -189,15 +190,9 @@ async def process_callbacks(call: types.CallbackQuery) -> None:
         await call.message.answer(t["feedback_prompt"], parse_mode="HTML")
         return
 
-    # إظهار عنوان محفظة بوليجون عند النقر على زر الكريبتو
-    if call.data == "web3":
+    if call.data in ["web3", "sub"]:
         user_states[user_id] = "main_menu"
-        await call.message.answer(t["web3_text"].format(wallet=METAMASK_WALLET_ADDRESS), parse_mode="Markdown")
-        return
-
-    if call.data == "sub":
-        user_states[user_id] = "main_menu"
-        await call.message.answer(t["stripe_text"].format(url=STRIPE_SUB_URL), parse_mode="Markdown")
+        await call.message.answer(t["test_payment_text"], parse_mode="HTML")
         return
 
     if call.data == "view_ledger":
@@ -214,9 +209,7 @@ async def process_callbacks(call: types.CallbackQuery) -> None:
     }
     
     if call.data in item_names:
-        pay_keyboard = InlineKeyboardMarkup()
-        pay_keyboard.add(InlineKeyboardButton("🔗 اضغط هنا لإتمام الدفع (€0.50)", url=STRIPE_ONETIME_URL))
-        await call.message.answer(t["payment_prompt"].format(item=item_names[call.data]), reply_markup=pay_keyboard, parse_mode="HTML")
+        await call.message.answer(t["test_notice"].format(item=item_names[call.data]), parse_mode="HTML")
         return
 
 if __name__ == '__main__':
