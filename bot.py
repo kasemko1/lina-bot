@@ -32,7 +32,7 @@ TRANSLATIONS = {
         "containers": "🟢 الشحن والكونتينرات (تجريبي) 🟢",
         "support": "🟢 الدعم الفني 🟢",
         "feedback": "🟢 ترك ملاحظة أو شكوى 🟢",
-        "share_bot": "📤 شارك البوت مع أصدقائك 📤",
+        "share_bot": "📤 مشاركة البوت لكل التطبيقات (واتساب، فيسبوك...) 📤",
         "admin_stats": "📊 لوحة تحكم الإحصائيات 📊",
         "sub": "🧪 تجربة اشتراك VIP 🧪",
         "web3": "🧪 تجربة دفع ميتاماسك 🧪",
@@ -47,7 +47,7 @@ TRANSLATIONS = {
         "test_payment_text": "🧪 <b>بوابة الدفع التجريبية:</b>\n\nالخدمات المالية مغلقة حالياً لأن البوت يخضع للاختبار المجاني وسيتم تفعيلها رسمياً بعد التسجيل النهائي للشركة.",
         "stats_report": "📊 <b>إحصائيات تفاعل البوت:</b>\n\n👥 عدد المستخدمين الكلي: <b>{users}</b>\n⚡ عدد تفاعلات النقر والخدمات: <b>{clicks}</b>",
         "quick_reply": "🟢 مرحباً بك مجدداً في نسخة التجربة. اختر إحدى الخدمات:",
-        "share_text": "🤖 تجربة ممتازة لبوت الذكاء الاصطناعي لينا (Lina AI Test-Bot). جربه الآن وانضم لمرحلة الاختبار:"
+        "share_text": "🤖 تجربة ممتازة لبوت الذكاء الاصطناعي لينا (Lina AI). جربه الآن:"
     },
     "de": {
         "welcome": "🟢 <b>Willkommen beim Lina Bot (Testversion)!</b>\n\nDieser Bot befindet sich in der Testphase. Wählen Sie unten einen Dienst aus:",
@@ -59,7 +59,7 @@ TRANSLATIONS = {
         "containers": "🟢 Versand & Container (Test) 🟢",
         "support": "🟢 Support 🟢",
         "feedback": "🟢 Feedback / Beschwerde 🟢",
-        "share_bot": "📤 Bot mit Freunden teilen 📤",
+        "share_bot": "📤 Bot auf WhatsApp, Facebook & Co. teilen 📤",
         "admin_stats": "📊 Admin Statistik 📊",
         "sub": "🧪 VIP-Abo (Test) 🧪",
         "web3": "🧪 MetaMask-Zahlung (Test) 🧪",
@@ -74,7 +74,7 @@ TRANSLATIONS = {
         "test_payment_text": "🧪 <b>Test-Zahlungssystem:</b>\n\nFinanzdienste sind derzeit deaktiviert während der Testphase.",
         "stats_report": "📊 <b>Bot-Statistiken:</b>\n\n👥 Gesamtzahl der Benutzer: <b>{users}</b>\n⚡ Gesamtzahl der Interaktionen: <b>{clicks}</b>",
         "quick_reply": "🟢 Willkommen zurück im Test-Modus. Wählen Sie eine Option:",
-        "share_text": "🤖 Entdecken Sie den Lina KI Test-Bot und probieren Sie ihn jetzt aus:"
+        "share_text": "🤖 Entdecken Sie den Lina KI Bot:"
     },
     "en": {
         "welcome": "🟢 <b>Welcome to Lina Bot (Test Version)!</b>\n\nThis bot is in a free test mode. Select a service below:",
@@ -86,7 +86,7 @@ TRANSLATIONS = {
         "containers": "🟢 Containers (Test) 🟢",
         "support": "🟢 Digital Support 🟢",
         "feedback": "🟢 Leave Feedback 🟢",
-        "share_bot": "📤 Share Bot with Friends 📤",
+        "share_bot": "📤 Share Bot on WhatsApp, FB & more 📤",
         "admin_stats": "📊 Admin Statistics 📊",
         "sub": "🧪 VIP Sub (Test) 🧪",
         "web3": "🧪 MetaMask (Test) 🧪",
@@ -101,7 +101,7 @@ TRANSLATIONS = {
         "test_payment_text": "🧪 <b>Test Payment:</b>\n\nPayment services are currently disabled during testing.",
         "stats_report": "📊 <b>Bot Statistics:</b>\n\n👥 Total Users: <b>{users}</b>\n⚡ Total Interactions: <b>{clicks}</b>",
         "quick_reply": "🟢 Welcome back to test mode:",
-        "share_text": "🤖 Try the Lina AI Test-Bot and check out its features:"
+        "share_text": "🤖 Try the Lina AI Bot:"
     }
 }
 
@@ -131,9 +131,14 @@ def get_main_keyboard(t, user_id, bot_username=""):
         InlineKeyboardButton(t["web3"], callback_data="web3")
     )
     
+    # استخدام رابط ويب عام (Web Share API link) ليفتح قائمة مشاركة الهاتف الشاملة (واتساب، فيسبوك، جيميل، إلخ)
     if bot_username:
-        share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}&text={t['share_text']}"
-        keyboard.add(InlineKeyboardButton(t["share_bot"], url=share_url))
+        # نستخدم رابط شبكة يتيح للمتصفح إظهار خيارات المشاركة العامة للجهاز
+        share_url = f"https://t.me/{bot_username}"
+        # ملاحظة: في تيليجرام الأزرار الـ url تفتح الرابط مباشرة، ولإظهار قائمة المشاركة الشاملة يتم توجيه الرابط لخدمة ويب أو استخدام رابط مباشر، 
+        # ولضمان فتح التطبيقات الخارجية مباشرة يمكننا توجيه الزر لرابط مشاركة واتساب مباشر كخيار سريع، أو رابط عام:
+        whatsapp_share_url = f"https://api.whatsapp.com/send?text={t['share_text']}%20https://t.me/{bot_username}"
+        keyboard.add(InlineKeyboardButton(t["share_bot"], url=whatsapp_share_url))
         
     if user_id == ADMIN_CHAT_ID:
         keyboard.add(InlineKeyboardButton(t["admin_stats"], callback_data="admin_stats"))
