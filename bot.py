@@ -160,7 +160,7 @@ TRANSLATIONS = {
     },
     "es": {
         "welcome": "🟢 <b>¡Bienvenido a Lina Bot (Versión de prueba)!</b>\n\nEste bot está en modo de prueba gratuito. Selecciona un servicio a continuación:",
-        "blocked": "Región bloqueada.",
+        "blocked": "Regione bloquée.",
         "real_estate": "🟢 Inmobiliaria (Prueba) 🟢",
         "cars": "🟢 Automoción (Prueba) 🟢",
         "services": "🟢 Servicios generales (Prueba) 🟢",
@@ -181,7 +181,7 @@ TRANSLATIONS = {
         "feedback_thanks": "🟢 ¡Comentarios enviados!",
         "ledger_report": "🟢 <b>Registro de prueba:</b> {count}",
         "test_payment_text": "🧪 <b>Pago de prueba:</b>\n\nLos servicios de pago están deshabilitados durante las pruebas.",
-        "stats_report": "📊 <b>Estadísticas del bot:</b>\n\n👥 Usuarios totales: <b>{users}</b>\n⚡ Interacciones totales: <b>{clicks}</b>",
+        "stats_report": "📊 <b>Estadísticas del bot:</b>\n\n👥 Usuarios totales: <b>{users}</b>\n⚡ Total interactions: <b>{clicks}</b>",
         "quick_reply": "🟢 Bienvenido de nuevo al modo de prueba:",
         "share_text": "🤖 Prueba el bot Lina AI:"
     }
@@ -194,7 +194,7 @@ def get_lang(message_or_call):
         for lang in TRANSLATIONS:
             if code.startswith(lang):
                 return lang
-    return "en"  # اللغة الافتراضية الإنجليزية في حال لم تكن اللغة ضمن الست
+    return "en"
 
 def get_main_keyboard(t, user_id, bot_username=""):
     keyboard = InlineKeyboardMarkup(row_width=2)
@@ -213,7 +213,6 @@ def get_main_keyboard(t, user_id, bot_username=""):
         InlineKeyboardButton(t["web3"], callback_data="web3")
     )
     
-    # زر مشاركة تليجرام المباشر للأصدقاء داخل التطبيق
     if bot_username:
         share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}&text={t['share_text']}"
         keyboard.add(InlineKeyboardButton(t["share_bot"], url=share_url))
@@ -246,6 +245,7 @@ async def handle_smart_sensor(message: types.Message):
     if message.from_user.language_code in BLOCKED_COUNTRIES:
         return
 
+    user_interactions.add(user_id)  # أضفنا التتبع هنا أيضاً عند إرسال أي نص
     lang = get_lang(message)
     t = TRANSLATIONS[lang]
     current_state = user_states.get(user_id, "main_menu")
@@ -272,6 +272,9 @@ async def process_callbacks(call: types.CallbackQuery) -> None:
     if call.from_user.language_code in BLOCKED_COUNTRIES:
         await call.answer("Blocked", show_alert=True)
         return
+
+    # التعديل الأساسي هنا: تسجيل المستخدم فور تفاعله مع أي زر
+    user_interactions.add(user_id)
 
     lang = get_lang(call)
     t = TRANSLATIONS[lang]
