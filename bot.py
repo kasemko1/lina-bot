@@ -7,7 +7,7 @@ import requests
 
 API_TOKEN = os.getenv("BOT_TOKEN")
 
-# رقم الآيدي الخاص بك للإدارة وتلقي الملاحظات
+# رقم الآيدي الخاص بك للإدارة وتلقي الملاحظات والإحصائيات
 ADMIN_CHAT_ID = 8807102611  
 
 logging.basicConfig(level=logging.INFO)
@@ -18,13 +18,15 @@ dp = Dispatcher(bot)
 user_states = {}
 user_data = {}
 user_ledger = {}
+user_interactions = set()  # تتبع المستخدمين الفريدين للتحليلات والإحصائيات
+action_counter = {"clicks": 0}  # عداد التفاعلات واستخدام الخدمات
 
 BLOCKED_COUNTRIES = ["ru", "ir"]
 
 TRANSLATIONS = {
     "ar": {
         "welcome": "🟢 <b>أهلاً بك في بوت لينا (النسخة التجريبية - Test Version)!</b>\n\nاختر الخدمة أدناه لاختبار أداء المنصة:",
-        "voice_welcome": "أهلاً بك في النسخة التجريبية لبوت لينا، منصة الأعمال والتنسيق التجاري.",
+        "voice_welcome": "أهلاً بك، هذا هو بوت لينا في مرحلة الاختبار والتجربة المجانية.",
         "blocked": "عذراً، الخدمة غير متاحة في منطقتك.",
         "real_estate": "🟢 عقارات دولية (تجريبي) 🟢",
         "cars": "🟢 قطاع السيارات (تجريبي) 🟢",
@@ -33,6 +35,7 @@ TRANSLATIONS = {
         "containers": "🟢 الشحن والكونتينرات (تجريبي) 🟢",
         "support": "🟢 الدعم الفني 🟢",
         "feedback": "🟢 ترك ملاحظة أو شكوى 🟢",
+        "admin_stats": "📊 لوحة تحكم الإحصائيات 📊",
         "sub": "🧪 تجربة اشتراك VIP 🧪",
         "web3": "🧪 تجربة دفع ميتاماسك 🧪",
         "bill_elec": "🟢 فاتورة الكهرباء (تجريبي) 🟢",
@@ -44,11 +47,12 @@ TRANSLATIONS = {
         "feedback_thanks": "🟢 تم إرسال ملاحظتك بنجاح للإدارة!",
         "ledger_report": "🟢 <b>السجل المحاسبي التجريبي:</b> الحركات المسجلة: {count}",
         "test_payment_text": "🧪 <b>بوابة الدفع التجريبية:</b>\n\nالخدمات المالية مغلقة حالياً لأن البوت يخضع للاختبار المجاني وسيتم تفعيلها رسمياً بعد التسجيل النهائي للشركة.",
+        "stats_report": "📊 <b>إحصائيات تفاعل البوت:</b>\n\n👥 عدد المستخدمين الكلي: <b>{users}</b>\n⚡ عدد تفاعلات النقر والخدمات: <b>{clicks}</b>\n\n*(هذه العدادات ستساعدك مستقبلاً عند التشغيل الفعلي لمعرفة حجم المدفوعات والاستخدام).*",
         "quick_reply": "🟢 مرحباً بك مجدداً. اختر إحدى الخدمات للتجربة:"
     },
     "de": {
-        "welcome": "🟢 <b>Willkommen bei Lina Bot (Testversion)!</b>\n\nWählen Sie unten einen Dienst aus, um die Plattform zu testen:",
-        "voice_welcome": "Willkommen zur Testversion von Lina Bot.",
+        "welcome": "🟢 <b>Willkommen beim Lina Bot (Testversion)!</b>\n\nWählen Sie unten einen Dienst aus, um die Plattform zu testen:",
+        "voice_welcome": "Willkommen, dies ist der Lina Bot in der Testphase.",
         "blocked": "Entschuldigung, dieser Dienst ist in Ihrer Region nicht verfügbar.",
         "real_estate": "🟢 Internationale Immobilien (Test) 🟢",
         "cars": "🟢 Automobilsektor (Test) 🟢",
@@ -57,6 +61,7 @@ TRANSLATIONS = {
         "containers": "🟢 Versand & Container (Test) 🟢",
         "support": "🟢 Support 🟢",
         "feedback": "🟢 Feedback / Beschwerde 🟢",
+        "admin_stats": "📊 Admin Statistik 📊",
         "sub": "🧪 VIP-Abo (Test) 🧪",
         "web3": "🧪 MetaMask-Zahlung (Test) 🧪",
         "bill_elec": "🟢 Stromrechnung (Test) 🟢",
@@ -68,11 +73,12 @@ TRANSLATIONS = {
         "feedback_thanks": "🟢 Vielen Dank! Ihr Feedback wurde gesendet.",
         "ledger_report": "🟢 <b>Test-Buchhaltung:</b> Registrierte Einträge: {count}",
         "test_payment_text": "🧪 <b>Test-Zahlungssystem:</b>\n\nFinanzdienste sind derzeit deaktiviert, da sich der Bot in der kostenlosen Testphase befindet.",
+        "stats_report": "📊 <b>Bot-Statistiken:</b>\n\n👥 Gesamtzahl der Benutzer: <b>{users}</b>\n⚡ Gesamtzahl der Interaktionen: <b>{clicks}</b>",
         "quick_reply": "🟢 Willkommen zurück. Wählen Sie eine Option zum Testen:"
     },
     "en": {
         "welcome": "🟢 <b>Welcome to Lina Bot (Test Version)!</b>\n\nSelect a service below to test the platform:",
-        "voice_welcome": "Welcome to the test version of Lina bot.",
+        "voice_welcome": "Welcome, this is Lina bot in the free test phase.",
         "blocked": "Region blocked.",
         "real_estate": "🟢 Real Estate (Test) 🟢",
         "cars": "🟢 Automotive (Test) 🟢",
@@ -81,6 +87,7 @@ TRANSLATIONS = {
         "containers": "🟢 Containers (Test) 🟢",
         "support": "🟢 Digital Support 🟢",
         "feedback": "🟢 Leave Feedback 🟢",
+        "admin_stats": "📊 Admin Statistics 📊",
         "sub": "🧪 VIP Sub (Test) 🧪",
         "web3": "🧪 MetaMask (Test) 🧪",
         "bill_elec": "🟢 Electricity (Test) 🟢",
@@ -92,6 +99,7 @@ TRANSLATIONS = {
         "feedback_thanks": "🟢 Feedback sent!",
         "ledger_report": "🟢 <b>Test Ledger:</b> {count}",
         "test_payment_text": "🧪 <b>Test Payment:</b>\n\nPayment services are currently disabled during the free testing phase.",
+        "stats_report": "📊 <b>Bot Statistics:</b>\n\n👥 Total Users: <b>{users}</b>\n⚡ Total Interactions: <b>{clicks}</b>",
         "quick_reply": "🟢 Welcome back:"
     }
 }
@@ -117,7 +125,7 @@ async def send_lina_voice(chat_id, text, lang='ar'):
     except Exception as e:
         logging.error(f"Voice error: {e}")
 
-def get_main_keyboard(t):
+def get_main_keyboard(t, user_id):
     keyboard = InlineKeyboardMarkup(row_width=2)
     keyboard.add(
         InlineKeyboardButton(t["real_estate"], callback_data="real_estate"),
@@ -133,6 +141,10 @@ def get_main_keyboard(t):
         InlineKeyboardButton(t["sub"], callback_data="sub"),
         InlineKeyboardButton(t["web3"], callback_data="web3")
     )
+    # إضافة زر الإحصائيات خصيصاً لك أنت كمدير (Admin) فقط ولا يظهر لأحد غيرك
+    if user_id == ADMIN_CHAT_ID:
+        keyboard.add(InlineKeyboardButton(t["admin_stats"], callback_data="admin_stats"))
+        
     return keyboard
 
 @dp.message_handler(commands=['start'])
@@ -142,12 +154,13 @@ async def send_welcome(message: types.Message):
         await message.answer(TRANSLATIONS[get_lang(message)]["blocked"])
         return
 
+    user_interactions.add(user_id)  # تسجيل المستخدم في العداد
     user_states[user_id] = "main_menu"
     lang = get_lang(message)
     t = TRANSLATIONS[lang]
     
     await send_lina_voice(message.chat.id, t["voice_welcome"], lang)
-    await message.answer(t["welcome"], reply_markup=get_main_keyboard(t), parse_mode="HTML")
+    await message.answer(t["welcome"], reply_markup=get_main_keyboard(t, user_id), parse_mode="HTML")
 
 @dp.message_handler(lambda message: not message.text.startswith('/'))
 async def handle_smart_sensor(message: types.Message):
@@ -172,7 +185,7 @@ async def handle_smart_sensor(message: types.Message):
         return
 
     user_states[user_id] = "main_menu"
-    await message.answer(t["quick_reply"], reply_markup=get_main_keyboard(t), parse_mode="HTML")
+    await message.answer(t["quick_reply"], reply_markup=get_main_keyboard(t, user_id), parse_mode="HTML")
 
 @dp.callback_query_handler(lambda call: True)
 async def process_callbacks(call: types.CallbackQuery) -> None:
@@ -184,6 +197,14 @@ async def process_callbacks(call: types.CallbackQuery) -> None:
     lang = get_lang(call)
     t = TRANSLATIONS[lang]
     await call.answer()
+    
+    action_counter["clicks"] += 1  # زيادة عداد التفاعلات والنقرات
+
+    if call.data == "admin_stats" and user_id == ADMIN_CHAT_ID:
+        total_users = len(user_interactions)
+        total_clicks = action_counter["clicks"]
+        await call.message.answer(t["stats_report"].format(users=total_users, clicks=total_clicks), parse_mode="HTML")
+        return
 
     if call.data == "leave_feedback":
         user_states[user_id] = "waiting_for_feedback"
