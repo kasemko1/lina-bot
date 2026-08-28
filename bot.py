@@ -21,6 +21,7 @@ action_counter = {"clicks": 0}  # عداد التفاعلات والنقرات
 
 BLOCKED_COUNTRIES = ["ru", "ir"]
 
+# القاموس الشامل للغات الست (العربية، الإنجليزية، الألمانية، الفرنسية، الإيطالية، الإسبانية)
 TRANSLATIONS = {
     "ar": {
         "welcome": "🟢 <b>أهلاً بك في بوت لينا (النسخة التجريبية - Test Version)!</b>\n\nهذا البوت في مرحلة الاختبار والتجربة المجانية. اختر الخدمة أدناه للاختبار:",
@@ -32,7 +33,7 @@ TRANSLATIONS = {
         "containers": "🟢 الشحن والكونتينرات (تجريبي) 🟢",
         "support": "🟢 الدعم الفني 🟢",
         "feedback": "🟢 ترك ملاحظة أو شكوى 🟢",
-        "share_bot": "📤 مشاركة البوت لكل التطبيقات (واتساب، فيسبوك...) 📤",
+        "share_bot": "📤 مشاركة البوت مع الأصدقاء 📤",
         "admin_stats": "📊 لوحة تحكم الإحصائيات 📊",
         "sub": "🧪 تجربة اشتراك VIP 🧪",
         "web3": "🧪 تجربة دفع ميتاماسك 🧪",
@@ -59,7 +60,7 @@ TRANSLATIONS = {
         "containers": "🟢 Versand & Container (Test) 🟢",
         "support": "🟢 Support 🟢",
         "feedback": "🟢 Feedback / Beschwerde 🟢",
-        "share_bot": "📤 Bot auf WhatsApp, Facebook & Co. teilen 📤",
+        "share_bot": "📤 Bot mit Freunden teilen 📤",
         "admin_stats": "📊 Admin Statistik 📊",
         "sub": "🧪 VIP-Abo (Test) 🧪",
         "web3": "🧪 MetaMask-Zahlung (Test) 🧪",
@@ -86,7 +87,7 @@ TRANSLATIONS = {
         "containers": "🟢 Containers (Test) 🟢",
         "support": "🟢 Digital Support 🟢",
         "feedback": "🟢 Leave Feedback 🟢",
-        "share_bot": "📤 Share Bot on WhatsApp, FB & more 📤",
+        "share_bot": "📤 Share Bot with Friends 📤",
         "admin_stats": "📊 Admin Statistics 📊",
         "sub": "🧪 VIP Sub (Test) 🧪",
         "web3": "🧪 MetaMask (Test) 🧪",
@@ -102,6 +103,87 @@ TRANSLATIONS = {
         "stats_report": "📊 <b>Bot Statistics:</b>\n\n👥 Total Users: <b>{users}</b>\n⚡ Total Interactions: <b>{clicks}</b>",
         "quick_reply": "🟢 Welcome back to test mode:",
         "share_text": "🤖 Try the Lina AI Bot:"
+    },
+    "fr": {
+        "welcome": "🟢 <b>Bienvenue sur Lina Bot (Version Test) !</b>\n\nCe bot est en mode test gratuit. Sélectionnez un service ci-dessous :",
+        "blocked": "Région bloquée.",
+        "real_estate": "🟢 Immobilier (Test) 🟢",
+        "cars": "🟢 Automobile (Test) 🟢",
+        "services": "🟢 Services généraux (Test) 🟢",
+        "ledger": "🟢 Registre comptable 🟢",
+        "containers": "🟢 Conteneurs (Test) 🟢",
+        "support": "🟢 Support technique 🟢",
+        "feedback": "🟢 Laisser un avis 🟢",
+        "share_bot": "📤 Partager le bot avec des amis 📤",
+        "admin_stats": "📊 Statistiques Admin 📊",
+        "sub": "🧪 Abonnement VIP (Test) 🧪",
+        "web3": "🧪 Paiement MetaMask (Test) 🧪",
+        "bill_elec": "🟢 Électricité (Test) 🟢",
+        "bill_water": "🟢 Eau (Test) 🟢",
+        "bill_phone": "🟢 Téléphone (Test) 🟢",
+        "bill_tax": "🟢 Taxe auto (Test) 🟢",
+        "test_notice": "⚠️ <b>Avis de test :</b>\n\nVous avez sélectionné : <b>{item}</b>.\nCe bot est en test gratuit. Aucun paiement réel.",
+        "feedback_prompt": "🟢 Entrez vos commentaires :",
+        "feedback_thanks": "🟢 Commentaires envoyés !",
+        "ledger_report": "🟢 <b>Registre de test :</b> {count}",
+        "test_payment_text": "🧪 <b>Paiement test :</b>\n\nLes services de paiement sont désactivés pendant les tests.",
+        "stats_report": "📊 <b>Statistiques du bot :</b>\n\n👥 Total utilisateurs : <b>{users}</b>\n⚡ Total interactions : <b>{clicks}</b>",
+        "quick_reply": "🟢 Bon retour en mode test :",
+        "share_text": "🤖 Essayez le bot Lina AI :"
+    },
+    "it": {
+        "welcome": "🟢 <b>Benvenuto in Lina Bot (Versione di prova)!</b>\n\nQuesto bot è in modalità test gratuita. Seleziona un servizio qui sotto:",
+        "blocked": "Regione bloccata.",
+        "real_estate": "🟢 Immobiliare (Test) 🟢",
+        "cars": "🟢 Settore automobilistico (Test) 🟢",
+        "services": "🟢 Servizi generali (Test) 🟢",
+        "ledger": "🟢 Registro contabile 🟢",
+        "containers": "🟢 Contenitori (Test) 🟢",
+        "support": "🟢 Supporto 🟢",
+        "feedback": "🟢 Lascia un feedback 🟢",
+        "share_bot": "📤 Condividi il bot con gli amici 📤",
+        "admin_stats": "📊 Statistiche Admin 📊",
+        "sub": "🧪 Abbonamento VIP (Test) 🧪",
+        "web3": "🧪 Pagamento MetaMask (Test) 🧪",
+        "bill_elec": "🟢 Elettricità (Test) 🟢",
+        "bill_water": "🟢 Acqua (Test) 🟢",
+        "bill_phone": "🟢 Telefono (Test) 🟢",
+        "bill_tax": "🟢 Tassa auto (Test) 🟢",
+        "test_notice": "⚠️ <b>Avviso di test:</b>\n\nHai selezionato: <b>{item}</b>.\nQuesto bot è in fase di test gratuito. Nessun pagamento reale.",
+        "feedback_prompt": "🟢 Inserisci il tuo feedback:",
+        "feedback_thanks": "🟢 Feedback inviato!",
+        "ledger_report": "🟢 <b>Registro di prova:</b> {count}",
+        "test_payment_text": "🧪 <b>Pagamento di prova:</b>\n\nI servizi di pagamento sono disabilitati durante i test.",
+        "stats_report": "📊 <b>Statistiche del bot:</b>\n\n👥 Utenti totali: <b>{users}</b>\n⚡ Interazioni totali: <b>{clicks}</b>",
+        "quick_reply": "🟢 Bentornato in modalità test:",
+        "share_text": "🤖 Prova il bot Lina AI:"
+    },
+    "es": {
+        "welcome": "🟢 <b>¡Bienvenido a Lina Bot (Versión de prueba)!</b>\n\nEste bot está en modo de prueba gratuito. Selecciona un servicio a continuación:",
+        "blocked": "Región bloqueada.",
+        "real_estate": "🟢 Inmobiliaria (Prueba) 🟢",
+        "cars": "🟢 Automoción (Prueba) 🟢",
+        "services": "🟢 Servicios generales (Prueba) 🟢",
+        "ledger": "🟢 Registro contable 🟢",
+        "containers": "🟢 Contenedores (Prueba) 🟢",
+        "support": "🟢 Soporte técnico 🟢",
+        "feedback": "🟢 Dejar comentarios 🟢",
+        "share_bot": "📤 Compartir bot con amigos 📤",
+        "admin_stats": "📊 Estadísticas de Admin 📊",
+        "sub": "🧪 Suscripción VIP (Prueba) 🧪",
+        "web3": "🧪 Pago MetaMask (Prueba) 🧪",
+        "bill_elec": "🟢 Electricidad (Prueba) 🟢",
+        "bill_water": "🟢 Agua (Prueba) 🟢",
+        "bill_phone": "🟢 Teléfono (Prueba) 🟢",
+        "bill_tax": "🟢 Impuesto de vehículos (Prueba) 🟢",
+        "test_notice": "⚠️ <b>Aviso de prueba:</b>\n\nHas seleccionado: <b>{item}</b>.\nEste bot está en modo de prueba gratuito. No hay pagos reales.",
+        "feedback_prompt": "🟢 Escribe tus comentarios:",
+        "feedback_thanks": "🟢 ¡Comentarios enviados!",
+        "ledger_report": "🟢 <b>Registro de prueba:</b> {count}",
+        "test_payment_text": "🧪 <b>Pago de prueba:</b>\n\nLos servicios de pago están deshabilitados durante las pruebas.",
+        "stats_report": "📊 <b>Estadísticas del bot:</b>\n\n👥 Usuarios totales: <b>{users}</b>\n⚡ Interacciones totales: <b>{clicks}</b>",
+        "quick_reply": "🟢 Bienvenido de nuevo al modo de prueba:",
+        "share_text": "🤖 Prueba el bot Lina AI:"
     }
 }
 
@@ -112,7 +194,7 @@ def get_lang(message_or_call):
         for lang in TRANSLATIONS:
             if code.startswith(lang):
                 return lang
-    return "en"
+    return "en"  # اللغة الافتراضية الإنجليزية في حال لم تكن اللغة ضمن الست
 
 def get_main_keyboard(t, user_id, bot_username=""):
     keyboard = InlineKeyboardMarkup(row_width=2)
@@ -131,14 +213,10 @@ def get_main_keyboard(t, user_id, bot_username=""):
         InlineKeyboardButton(t["web3"], callback_data="web3")
     )
     
-    # استخدام رابط ويب عام (Web Share API link) ليفتح قائمة مشاركة الهاتف الشاملة (واتساب، فيسبوك، جيميل، إلخ)
+    # زر مشاركة تليجرام المباشر للأصدقاء داخل التطبيق
     if bot_username:
-        # نستخدم رابط شبكة يتيح للمتصفح إظهار خيارات المشاركة العامة للجهاز
-        share_url = f"https://t.me/{bot_username}"
-        # ملاحظة: في تيليجرام الأزرار الـ url تفتح الرابط مباشرة، ولإظهار قائمة المشاركة الشاملة يتم توجيه الرابط لخدمة ويب أو استخدام رابط مباشر، 
-        # ولضمان فتح التطبيقات الخارجية مباشرة يمكننا توجيه الزر لرابط مشاركة واتساب مباشر كخيار سريع، أو رابط عام:
-        whatsapp_share_url = f"https://api.whatsapp.com/send?text={t['share_text']}%20https://t.me/{bot_username}"
-        keyboard.add(InlineKeyboardButton(t["share_bot"], url=whatsapp_share_url))
+        share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}&text={t['share_text']}"
+        keyboard.add(InlineKeyboardButton(t["share_bot"], url=share_url))
         
     if user_id == ADMIN_CHAT_ID:
         keyboard.add(InlineKeyboardButton(t["admin_stats"], callback_data="admin_stats"))
