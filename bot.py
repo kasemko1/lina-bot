@@ -5,7 +5,7 @@ import os
 
 API_TOKEN = os.getenv("BOT_TOKEN")
 
-# رقم الآيدي الخاص بك للإدارة وتلقي الملاحظات والإحصائيات
+# رقم الآيدي الخاص بك للإدارة وتلقي الملاحظات والإحصائيات بشكل آمن
 ADMIN_CHAT_ID = 8807102611  
 
 logging.basicConfig(level=logging.INFO)
@@ -16,15 +16,14 @@ dp = Dispatcher(bot)
 user_states = {}
 user_data = {}
 user_ledger = {}
-user_interactions = set()  # تتبع المستخدمين الفريدين للإحصائيات
-action_counter = {"clicks": 0}  # عداد التفاعلات والنقرات
+user_interactions = set()
+action_counter = {"clicks": 0}
 
 BLOCKED_COUNTRIES = ["ru", "ir"]
 
-# القاموس الشامل للغات الست مع الأسعار الواضحة تماماً في أزرار الدفع
 TRANSLATIONS = {
     "ar": {
-        "welcome": "🟢 <b>أهلاً بك في بوت لينا (منصة الأعمال الذكية)!</b>\n\n⚠️ <i>ملاحظة هامة: البوت حالياً في المرحلة التجريبية ريثما يتم التسجيل النظامي وتأسيس الشركة رسمياً للامتثال الضريبي والمالي، وجميع المعاملات الحالية مجانية ولن يتم خصم أي مبالغ.</i>\n\nاختر الخدمة أو طريقة الدفع المطلوبة أدناه:",
+        "welcome": "🟢 <b>أهلاً بك في بوت لينا (منصة الأعمال الذكية)!</b>\n\n⚠️ <i>ملاحظة هامة: البوت حالياً في المرحلة التجريبية ريثما يتم التسجيل النظامي وتأسيس الشركة رسمياً، وجميع المعاملات الحالية مجانية ولن يتم خصم أي مبالغ.</i>\n\nاختر الخدمة أو طريقة الدفع المطلوبة أدناه:",
         "blocked": "عذراً، الخدمة غير متاحة في منطقتك.",
         "real_estate": "🟢 عقارات دولية",
         "cars": "🟢 قطاع السيارات",
@@ -42,12 +41,12 @@ TRANSLATIONS = {
         "bill_phone": "🟢 فاتورة الاتصالات",
         "bill_tax": "🟢 ضريبة المركبات",
         "test_notice": "⚠️ <b>تنبيه النسخة التجريبية:</b>\n\nلقد اخترت خدمة: <b>{item}</b>.\nهذا البوت في مرحلة الاختبار والتجربة المجانية ريثما يتم تأسيس الشركة رسمياً لضمان العمل النظامي والضريبي، ولا يتم خصم أي أموال حقيقية حالياً.",
-        "feedback_prompt": "🟢 تفضل يا غالي، اكتب ملاحظتك أو شكواك للإدارة:",
-        "feedback_thanks": "🟢 تم إرسال ملاحظتك بنجاح للإدارة!",
+        "feedback_prompt": "🟢 أهلاً بك. يرجى كتابة ملاحظتك أو شكواك في رسالة واحدة أدناه ليتم إرسالها للإدارة:",
+        "feedback_thanks": "🟢 تم إرسال ملاحظتك بنجاح للإدارة، شكراً لتواصلك!",
         "ledger_report": "🟢 <b>السجل المحاسبي (التجريبي):</b> الحركات المسجلة: {count}",
-        "test_payment_text": "🧪 <b>بوابة الدفع التجريبية:</b>\n\nالخدمات المالية والضريبية مغلقة مؤقتاً لحين استكمال تأسيس الشركة رسمياً وتفعيل الربط المالي النظامي، ولن يتم خصم أي شيء منك الآن.",
+        "test_payment_text": "🧪 <b>بوابة الدفع التجريبية:</b>\n\nهذه الخدمة مجانية حالياً أثناء الفترة التجريبية.\n\n💡 <b>رسوم الاستخدام المستقبلية بعد تأسيس الشركة:</b>\n• رسوم المعاملة الواحدة: <b>0.50 سنت</b>.\n• الاشتراك الشهري: <b>2.99 يورو</b>.\n\nلن يتم خصم أي شيء منك الآن.",
         "stats_report": "📊 <b>إحصائيات تفاعل البوت:</b>\n\n👥 عدد المستخدمين الكلي: <b>{users}</b>\n⚡ عدد تفاعلات النقر والخدمات: <b>{clicks}</b>",
-        "quick_reply": "🟢 مرحباً بك مجدداً. اختر إحدى الخدمات:",
+        "quick_reply": "🟢 مرحباً بك مجدداً. اختر إحدى الخدمات من القائمة أدناه:",
         "share_text": "🤖 منصة الأعمال الذكية بوت لينا (Lina AI). جربه الآن:"
     },
     "de": {
@@ -72,7 +71,7 @@ TRANSLATIONS = {
         "feedback_prompt": "🟢 Bitte geben Sie Ihr Feedback ein:",
         "feedback_thanks": "🟢 Vielen Dank! Ihr Feedback wurde gesendet.",
         "ledger_report": "🟢 <b>Test-Buchhaltung:</b> Registrierte Einträge: {count}",
-        "test_payment_text": "🧪 <b>Zahlungssystem:</b>\n\nFinanzdienste sind bis zur offiziellen Firmengründung deaktiviert.",
+        "test_payment_text": "🧪 <b>Zahlungssystem:</b>\n\nKostenlos in der Testphase.\n\n💡 <b>Zukünftige Gebühren:</b>\n• Transaktion: <b>0.50€</b>\n• Monatsabo: <b>2.99€</b>\n\nEs wird jetzt nichts abgebucht.",
         "stats_report": "📊 <b>Bot-Statistiken:</b>\n\n👥 Gesamtzahl der Benutzer: <b>{users}</b>\n⚡ Gesamtzahl der Interaktionen: <b>{clicks}</b>",
         "quick_reply": "🟢 Willkommen zurück. Wählen Sie eine Option:",
         "share_text": "🤖 Entdecken Sie den Lina KI Bot:"
@@ -99,7 +98,7 @@ TRANSLATIONS = {
         "feedback_prompt": "🟢 Type your feedback:",
         "feedback_thanks": "🟢 Feedback sent!",
         "ledger_report": "🟢 <b>Ledger:</b> {count}",
-        "test_payment_text": "🧪 <b>Payment:</b>\n\nPayment services are currently disabled until official company setup.",
+        "test_payment_text": "🧪 <b>Payment Gateway:</b>\n\nFree during the trial phase.\n\n💡 <b>Future Fees:</b>\n• Per transaction: <b>0.50€</b>\n• Monthly subscription: <b>2.99€</b>\n\nNo charges will be made now.",
         "stats_report": "📊 <b>Bot Statistics:</b>\n\n👥 Total Users: <b>{users}</b>\n⚡ Total Interactions: <b>{clicks}</b>",
         "quick_reply": "🟢 Welcome back:",
         "share_text": "🤖 Try the Lina AI Bot:"
@@ -126,7 +125,7 @@ TRANSLATIONS = {
         "feedback_prompt": "🟢 Entrez vos commentaires :",
         "feedback_thanks": "🟢 Commentaires envoyés !",
         "ledger_report": "🟢 <b>Registre :</b> {count}",
-        "test_payment_text": "🧪 <b>Paiement :</b>\n\nDésactivé jusqu'à la création officielle de l'entreprise.",
+        "test_payment_text": "🧪 <b>Paiement :</b>\n\nGratuit pendant la phase de test.\n\n💡 <b>Frais futurs :</b>\n• Transaction : <b>0.50€</b>\n• Abonnement mensuel : <b>2.99€</b>\n\nAucun prélèvement maintenant.",
         "stats_report": "📊 <b>Statistiques :</b>\n\n👥 Utilisateurs : <b>{users}</b>\n⚡ Interactions : <b>{clicks}</b>",
         "quick_reply": "🟢 Bon retour :",
         "share_text": "🤖 Essayez le bot Lina AI :"
@@ -153,7 +152,7 @@ TRANSLATIONS = {
         "feedback_prompt": "🟢 Inserisci il tuo feedback:",
         "feedback_thanks": "🟢 Feedback inviato!",
         "ledger_report": "🟢 <b>Registro:</b> {count}",
-        "test_payment_text": "🧪 <b>Pagamento:</b>\n\nDisabilitato fino alla costituzione ufficiale della società.",
+        "test_payment_text": "🧪 <b>Pagamento:</b>\n\nGratuito durante la fase di prova.\n\n💡 <b>Tariffe future:</b>\n• Transazione: <b>0.50€</b>\n• Abbonamento mensile: <b>2.99€</b>\n\nNessun addebito ora.",
         "stats_report": "📊 <b>Statistiche:</b>\n\n👥 Utenti: <b>{users}</b>\n⚡ Interazioni: <b>{clicks}</b>",
         "quick_reply": "🟢 Bentornato:",
         "share_text": "🤖 Prova il bot Lina AI:"
@@ -180,7 +179,7 @@ TRANSLATIONS = {
         "feedback_prompt": "🟢 Escribe tus comentarios:",
         "feedback_thanks": "🟢 ¡Comentarios enviados!",
         "ledger_report": "🟢 <b>Registro:</b> {count}",
-        "test_payment_text": "🧪 <b>Pago:</b>\n\nDeshabilitado hasta la constitución oficial de la empresa.",
+        "test_payment_text": "🧪 <b>Pago:</b>\n\nGratis durante la prueba.\n\n💡 <b>Tarifas futuras:</b>\n• Transacción: <b>0.50€</b>\n• Suscripción mensual: <b>2.99€</b>\n\nNo se te cobrará nada ahora.",
         "stats_report": "📊 <b>Estadísticas:</b>\n\n👥 Usuarios: <b>{users}</b>\n⚡ Total interactions: <b>{clicks}</b>",
         "quick_reply": "🟢 Bienvenido de nuevo:",
         "share_text": "🤖 Prueba el bot Lina AI:"
@@ -253,9 +252,9 @@ async def handle_smart_sensor(message: types.Message):
     if current_state == "waiting_for_feedback":
         user_states[user_id] = "main_menu"
         user_text = message.text
-        user_name = message.from_user.full_name or "مستخدم مجهول"
+        # تم إخفاء الآيدي والاسم تماماً عن العام، وإرسال الملاحظة للإدارة سرايّةً فقط دون كشف أي معلومات برمجية
         try:
-            admin_msg = f"🟢 <b>ملاحظة جديدة في بوت لينا (تجريبي):</b>\n\n👤 الاسم: {user_name}\n🆔 الآيدي: `{user_id}`\n\n💬 النص:\n<i>{user_text}</i>"
+            admin_msg = f"🟢 <b>ملاحظة جديدة في البوت (تجريبي):</b>\n\n💬 النص:\n<i>{user_text}</i>"
             await bot.send_message(ADMIN_CHAT_ID, admin_msg, parse_mode="HTML")
         except Exception as e:
             logging.error(f"Error: {e}")
