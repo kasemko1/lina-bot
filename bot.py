@@ -1,7 +1,8 @@
 import logging
+import json
+import os
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-import os
 
 API_TOKEN = os.getenv("BOT_TOKEN")
 
@@ -16,12 +17,37 @@ dp = Dispatcher(bot)
 user_states = {}
 user_data = {}
 user_ledger = {}
-user_interactions = set()
-action_counter = {"clicks": 0}
 
-# متغيرات خاصة بالحجز المبكر (أول 500 مشترك)
+# ملف حفظ البيانات لضمان عدم ضياع الإحصائيات عند إعادة التشغيل أو التحديث
+DATA_FILE = "bot_data.json"
+user_interactions = set()
 early_bird_users = set()
+action_counter = {"clicks": 0}
 EARLY_BIRD_LIMIT = 500
+
+# تحميل البيانات السابقة إن وجدت
+if os.path.exists(DATA_FILE):
+    try:
+        with open(DATA_FILE, "r", encoding="utf-8") as f:
+            saved_data = json.load(f)
+            user_interactions = set(saved_data.get("users", []))
+            early_bird_users = set(saved_data.get("early_birds", []))
+            action_counter = {"clicks": saved_data.get("clicks", 0)}
+    except Exception as e:
+        logging.error(f"Error loading saved data: {e}")
+
+# دالة لحفظ البيانات فوراً على القرص الصلب
+def save_data():
+    try:
+        data = {
+            "users": list(user_interactions),
+            "early_birds": list(early_bird_users),
+            "clicks": action_counter["clicks"]
+        }
+        with open(DATA_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False)
+    except Exception as e:
+        logging.error(f"Error saving data: {e}")
 
 BLOCKED_COUNTRIES = ["ru", "ir"]
 
@@ -40,7 +66,7 @@ TRANSLATIONS = {
         "admin_stats": "📊 لوحة تحكم الإحصائيات",
         "sub": "🟢 VIP (2.99€ ستريب)",
         "web3": "🟢 دفع ميتاماسك (0.50€)",
-        "early_bird_btn": "🎯 حجز مبكر: الباقة السنوية (19.99€ لأول 500)",
+        "early_bird_btn": "🎯 حجز مبكر: الباقة السنوية (19.99€ بدلاً من 24.99€)",
         "bill_elec": "🟢 فاتورة الكهرباء",
         "bill_water": "🟢 فاتورة المياه",
         "bill_phone": "🟢 فاتورة الاتصالات",
@@ -49,12 +75,12 @@ TRANSLATIONS = {
         "feedback_prompt": "🟢 أهلاً بك. يرجى كتابة ملاحظتك أو شكواك في رسالة واحدة أدناه ليتم إرسالها للإدارة:",
         "feedback_thanks": "🟢 تم إرسال ملاحظتك بنجاح للإدارة، شكراً لتواصلك!",
         "ledger_report": "🟢 <b>السجل المحاسبي (التجريبي):</b> الحركات المسجلة: {count}",
-        "test_payment_text": "🧪 <b>بوابة الدفع التجريبية:</b>\n\nهذه الخدمة مجانية حالياً أثناء الفترة التجريبية.\n\n💡 <b>رسوم الاستخدام المستقبلية بعد تأسيس الشركة:</b>\n• رسوم المعاملة الواحدة: <b>0.50 سنت</b>.\n• الاشتراك الشهري: <b>2.99 يورو</b>.\n\nلن يتم خصم أي شيء منك الآن.",
-        "early_bird_msg": "🟢 <b>أهلاً بك في قائمة الحجز المبكر الحصرية لبوت لينا!</b>\n\nنود إعلامك أن \"بوت لينا\" يعمل حالياً في <b>فترة تجريبية مجانية بالكامل</b> (تستمر من 3 أسابيع إلى شهر)، ولن يتم تفعيل الخدمات المدفوعة أو الإطلاق الرسمي والنظامي الكامل إلا بعد استكمال كافة الإجراءات وتأسيس الشركة بشكل رسمي وقانوني في ألمانيا.\n\n🎁 <b>مكافأة الحجز المبكر (بدون أي رسوم حالياً):</b>\n• التسجيل والحجز الآن <b>مجاني 100%</b> ولا يتطلب دفع أي مبالغ مالية.\n• هذا الحجز يضمن لك الحصول على <b>الباقة السنوية بسعر حصري 19.99 يورو</b> (بدلاً من السعر الأساسي) فور الإطلاق الرسمي والنظامي للشركة.\n• <b>ملاحظة:</b> هذا العرض خاص وحصري فقط لـ <b>أول 500 شخص</b> يقومون بالتسجيل المبدئي!\n\n📊 <i>عدد المسجلين في قائمة الحجز المبكر حتى الآن: <b>{count} / 500</b></i>",
-        "early_bird_success": "✅ <b>تم تسجيلك بنجاح في قائمة الحجز المبكر الحصرية!</b>\n\nتم تثبيت مقعدك ضمن أول 500 مستفيد للحصول على الباقة السنوية بـ 19.99 يورو فور الإطلاق الرسمي.",
+        "test_payment_text": "🧪 <b>بوابة الدفع التجريبية:</b>\n\nهذه الخدمة مجانية حالياً أثناء الفترة التجريبية.\n\n💡 <b>رسوم الاستخدام المستقبلية بعد تأسيس الشركة:</b>\n• رسوم المعاملة الواحدة: <b>0.50 سنت</b>.\n• الاشتراك الشهري: <b>2.99 يورو</b>.\n• الاشتراك السنوي الأساسي: <b>24.99 يورو</b>.\n\nلن يتم خصم أي شيء منك الآن.",
+        "early_bird_msg": "🟢 <b>أهلاً بك في قائمة الحجز المبكر الحصرية لبوت لينا!</b>\n\nنود إعلامك أن \"بوت لينا\" يعمل حالياً في <b>فترة تجريبية مجانية بالكامل</b> (تستمر من 3 أسابيع إلى شهر)، ولن يتم تفعيل الخدمات المدفوعة أو الإطلاق الرسمي والنظامي الكامل إلا بعد استكمال كافة الإجراءات وتأسيس الشركة بشكل رسمي وقانوني في ألمانيا.\n\n🎁 <b>مكافأة الحجز المبكر (بدون أي رسوم حالياً):</b>\n• التسجيل والحجز الآن <b>مجاني 100%</b> ولا يتطلب دفع أي مبالغ مالية.\n• هذا الحجز يضمن لك الحصول على <b>الباقة السنوية بسعر حصري 19.99 يورو</b> (بدلاً من السعر الأساسي <b>24.99 يورو</b>) فور الإطلاق الرسمي والنظامي للشركة.\n• <b>ملاحظة:</b> هذا العرض خاص وحصري فقط لـ <b>أول 500 شخص</b> يقومون بالتسجيل المبدئي!\n\n📊 <i>عدد المسجلين في قائمة الحجز المبكر حتى الآن: <b>{count} / 500</b></i>",
+        "early_bird_success": "✅ <b>تم تسجيلك بنجاح في قائمة الحجز المبكر الحصرية!</b>\n\nتم تثبيت مقعدك ضمن أول 500 مستفيد للحصول على الباقة السنوية بـ 19.99 يورو (بدلاً من 24.99 يورو) فور الإطلاق الرسمي.",
         "early_bird_already": "⚠️ <b>أنت مسجل بالفعل!</b>\n\nلقد قمت بحجز مقعدك مسبقاً في قائمة الحجز المبكر.",
         "early_bird_full": "⚠️ عذراً، اكتمل العدد المخصص للحجز المبكر (500 مشترك).",
-        "stats_report": "📊 <b>إحصائيات تفاعل البوت:</b>\n\n👥 عدد المستخدمين الكلي: <b>{users}</b>\n⚡ عدد تفاعلات النقر والخدمات: <b>{clicks}</b>\n🎯 مسجلو الحجز المبكر: <b>{early_count} / 500</b>",
+        "stats_report": "📊 <b>إحصائيات تفاعل البوت (محفوظة دائماً):</b>\n\n👥 عدد المستخدمين الكلي: <b>{users}</b>\n⚡ عدد تفاعلات النقر والخدمات: <b>{clicks}</b>\n🎯 مسجلو الحجز المبكر: <b>{early_count} / 500</b>",
         "quick_reply": "🟢 مرحباً بك مجدداً. اختر إحدى الخدمات من القائمة أدناه:",
         "share_text": "🤖 منصة الأعمال الذكية بوت لينا (Lina AI). جربه الآن:"
     },
@@ -72,7 +98,7 @@ TRANSLATIONS = {
         "admin_stats": "📊 Admin Statistik",
         "sub": "🟢 VIP (2.99€ Stripe)",
         "web3": "🟢 MetaMask (0.50€)",
-        "early_bird_btn": "🎯 Frühbucher: Jahresabo (19.99€ für die ersten 500)",
+        "early_bird_btn": "🎯 Frühbucher: Jahresabo (19.99€ statt 24.99€)",
         "bill_elec": "🟢 Stromrechnung",
         "bill_water": "🟢 Wasserrechnung",
         "bill_phone": "🟢 Telefonrechnung",
@@ -81,9 +107,9 @@ TRANSLATIONS = {
         "feedback_prompt": "🟢 Bitte geben Sie Ihr Feedback ein:",
         "feedback_thanks": "🟢 Vielen Dank! Ihr Feedback wurde gesendet.",
         "ledger_report": "🟢 <b>Test-Buchhaltung:</b> Registrierte Einträge: {count}",
-        "test_payment_text": "🧪 <b>Zahlungssystem:</b>\n\nKostenlos in der Testphase.\n\n💡 <b>Zukünftige Gebühren:</b>\n• Transaktion: <b>0.50€</b>\n• Monatsabo: <b>2.99€</b>\n\nEs wird jetzt nichts abgebucht.",
-        "early_bird_msg": "🟢 <b>Willkommen auf der exklusiven Frühbucher-Warteliste!</b>\n\nDer Lina Bot befindet sich in einer <b>kostenlosen Testphase</b> (3 Wochen bis 1 Monat). Der offizielle Start erfolgt erst nach vollständiger Firmengründung in Deutschland.\n\n🎁 <b>Frühbucher-Vorteil (jetzt 100% kostenlos):</b>\n• Keine Gebühren während der Testphase.\n• Sichern Sie sich das Jahresabo zum Vorzugspreis von <b>19.99€</b> nach dem offiziellen Start.\n• Exklusiv für die <b>ersten 500 Registrierungen</b>!\n\n📊 <i>Bereits registriert: <b>{count} / 500</b></i>",
-        "early_bird_success": "✅ <b>Erfolgreich in der Frühbucher-Liste registriert!</b>\n\nIhr Platz unter den ersten 500 ist gesichert.",
+        "test_payment_text": "🧪 <b>Zahlungssystem:</b>\n\nKostenlos in der Testphase.\n\n💡 <b>Zukünftige Gebühren:</b>\n• Transaktion: <b>0.50€</b>\n• Monatsabo: <b>2.99€</b>\n• Jahresabo regulär: <b>24.99€</b>\n\nEs wird jetzt nichts abgebucht.",
+        "early_bird_msg": "🟢 <b>Willkommen auf der exklusiven Frühbucher-Warteliste!</b>\n\nDer Lina Bot befindet sich in einer <b>kostenlosen Testphase</b> (3 Wochen bis 1 Monat). Der offizielle Start erfolgt erst nach vollständiger Firmengründung in Deutschland.\n\n🎁 <b>Frühbucher-Vorteil (jetzt 100% kostenlos):</b>\n• Keine Gebühren während der Testphase.\n• Sichern Sie sich das Jahresabo zum Vorzugspreis von <b>19.99€</b> (statt regulär <b>24.99€</b>) nach dem offiziellen Start.\n• Exklusiv für die <b>ersten 500 Registrierungen</b>!\n\n📊 <i>Bereits registriert: <b>{count} / 500</b></i>",
+        "early_bird_success": "✅ <b>Erfolgreich in der Frühbucher-Liste registriert!</b>\n\nIhr Platz unter den ersten 500 für das Jahresabo zu 19.99€ (statt 24.99€) ist gesichert.",
         "early_bird_already": "⚠️ Sie sind bereits in der Frühbucher-Liste registriert.",
         "early_bird_full": "⚠️ Das Kontingent für Frühbucher (500) ist leider erschöpft.",
         "stats_report": "📊 <b>Bot-Statistiken:</b>\n\n👥 Gesamtzahl der Benutzer: <b>{users}</b>\n⚡ Gesamtzahl der Interaktionen: <b>{clicks}</b>\n🎯 Frühbucher: <b>{early_count} / 500</b>",
@@ -104,7 +130,7 @@ TRANSLATIONS = {
         "admin_stats": "📊 Admin Statistics",
         "sub": "🟢 VIP (2.99€ Stripe)",
         "web3": "🟢 MetaMask (0.50€)",
-        "early_bird_btn": "🎯 Early Bird: Annual Pass (19.99€ for first 500)",
+        "early_bird_btn": "🎯 Early Bird: Annual Pass (19.99€ instead of 24.99€)",
         "bill_elec": "🟢 Electricity",
         "bill_water": "🟢 Water",
         "bill_phone": "🟢 Phone",
@@ -113,9 +139,9 @@ TRANSLATIONS = {
         "feedback_prompt": "🟢 Type your feedback:",
         "feedback_thanks": "🟢 Feedback sent!",
         "ledger_report": "🟢 <b>Ledger:</b> {count}",
-        "test_payment_text": "🧪 <b>Payment Gateway:</b>\n\nFree during the trial phase.\n\n💡 <b>Future Fees:</b>\n• Per transaction: <b>0.50€</b>\n• Monthly subscription: <b>2.99€</b>\n\nNo charges will be made now.",
-        "early_bird_msg": "🟢 <b>Welcome to Lina Bot Early Bird Waitlist!</b>\n\nOperating in a <b>free trial phase</b> (3 weeks to 1 month). Official rollout takes place after formal company incorporation in Germany.\n\n🎁 <b>Early Bird Perks (100% Free Now):</b>\n• Zero charges today.\n• Secure the annual plan for <b>19.99€</b> upon official launch.\n• Strictly limited to the <b>first 500 users</b>!\n\n📊 <i>Registered so far: <b>{count} / 500</b></i>",
-        "early_bird_success": "✅ <b>Successfully registered for Early Bird access!</b>\n\nYour spot is secured.",
+        "test_payment_text": "🧪 <b>Payment Gateway:</b>\n\nFree during the trial phase.\n\n💡 <b>Future Fees:</b>\n• Per transaction: <b>0.50€</b>\n• Monthly subscription: <b>2.99€</b>\n• Regular Annual subscription: <b>24.99€</b>\n\nNo charges will be made now.",
+        "early_bird_msg": "🟢 <b>Welcome to Lina Bot Early Bird Waitlist!</b>\n\nOperating in a <b>free trial phase</b> (3 weeks to 1 month). Official rollout takes place after formal company incorporation in Germany.\n\n🎁 <b>Early Bird Perks (100% Free Now):</b>\n• Zero charges today.\n• Secure the annual plan for <b>19.99€</b> (instead of the regular <b>24.99€</b>) upon official launch.\n• Strictly limited to the <b>first 500 users</b>!\n\n📊 <i>Registered so far: <b>{count} / 500</b></i>",
+        "early_bird_success": "✅ <b>Successfully registered for Early Bird access!</b>\n\nYour spot is secured for the annual pass at 19.99€ (instead of 24.99€).",
         "early_bird_already": "⚠️ You are already on the early bird list.",
         "early_bird_full": "⚠️ Early bird capacity (500 users) has been reached.",
         "stats_report": "📊 <b>Bot Statistics:</b>\n\n👥 Total Users: <b>{users}</b>\n⚡ Total Interactions: <b>{clicks}</b>\n🎯 Early Bird Signups: <b>{early_count} / 500</b>",
@@ -136,7 +162,7 @@ TRANSLATIONS = {
         "admin_stats": "📊 Statistiques Admin",
         "sub": "🟢 VIP (2.99€ Stripe)",
         "web3": "🟢 MetaMask (0.50€)",
-        "early_bird_btn": "🎯 Offre Précoce : Abonnement (19.99€ / 500 premiers)",
+        "early_bird_btn": "🎯 Offre Précoce : Annuel (19.99€ au lieu de 24.99€)",
         "bill_elec": "🟢 Électricité",
         "bill_water": "🟢 Eau",
         "bill_phone": "🟢 Téléphone",
@@ -145,8 +171,8 @@ TRANSLATIONS = {
         "feedback_prompt": "🟢 Entrez vos commentaires :",
         "feedback_thanks": "🟢 Commentaires envoyés !",
         "ledger_report": "🟢 <b>Registre :</b> {count}",
-        "test_payment_text": "🧪 <b>Paiement :</b>\n\nGratuit pendant la phase de test.",
-        "early_bird_msg": "🟢 <b>Bienvenue sur la liste d'attente anticipée !</b>\n\nPhase de test gratuite. Réservé aux <b>500 premiers utilisateurs</b>.\n\n📊 <i>Inscrits : <b>{count} / 500</b></i>",
+        "test_payment_text": "🧪 <b>Paiement :</b>\n\nGratuit pendant la phase de test.\n\n💡 <b>Tarifs futurs :</b>\n• Transaction : <b>0.50€</b>\n• Abonnement mensuel : <b>2.99€</b>\n• Abonnement annuel : <b>24.99€</b>",
+        "early_bird_msg": "🟢 <b>Bienvenue sur la liste d'attente anticipée !</b>\n\nPhase de test gratuite. Réservé aux <b>500 premiers utilisateurs</b>.\n\n🎁 Obtenez l'annuel pour <b>19.99€</b> au lieu de <b>24.99€</b>.\n\n📊 <i>Inscrits : <b>{count} / 500</b></i>",
         "early_bird_success": "✅ <b>Inscription réussie !</b> Votre place est réservée.",
         "early_bird_already": "⚠️ Vous êtes déjà inscrit.",
         "early_bird_full": "⚠️ Capacité maximale atteinte.",
@@ -168,7 +194,7 @@ TRANSLATIONS = {
         "admin_stats": "📊 Statistiche Admin",
         "sub": "🟢 VIP (2.99€ Stripe)",
         "web3": "🟢 MetaMask (0.50€)",
-        "early_bird_btn": "🎯 Prenotazione anticipata (19.99€ primi 500)",
+        "early_bird_btn": "🎯 Prenotazione anticipata (19.99€ anziché 24.99€)",
         "bill_elec": "🟢 Elettricità",
         "bill_water": "🟢 Acqua",
         "bill_phone": "🟢 Telefono",
@@ -177,8 +203,8 @@ TRANSLATIONS = {
         "feedback_prompt": "🟢 Inserisci il tuo feedback:",
         "feedback_thanks": "🟢 Feedback inviato!",
         "ledger_report": "🟢 <b>Registro:</b> {count}",
-        "test_payment_text": "🧪 <b>Pagamento:</b>\n\nGratuito durante la fase di prova.",
-        "early_bird_msg": "🟢 <b>Benvenuto nella lista d'attesa anticipata!</b>\n\nRiservato ai primi <b>500 utenti</b>.\n\n📊 <i>Registrati: <b>{count} / 500</b></i>",
+        "test_payment_text": "🧪 <b>Pagamento:</b>\n\nGratuito durante la fase di prova.\n\n💡 <b>Tariffe future:</b>\n• Transazione: <b>0.50€</b>\n• Abbonamento mensile: <b>2.99€</b>\n• Abbonamento annuale: <b>24.99€</b>",
+        "early_bird_msg": "🟢 <b>Benvenuto nella lista d'attesa anticipata!</b>\n\nRiservato ai primi <b>500 utenti</b>.\n\n🎁 Assicurati l'annuale a <b>19.99€</b> anziché <b>24.99€</b>.\n\n📊 <i>Registrati: <b>{count} / 500</b></i>",
         "early_bird_success": "✅ <b>Registrazione completata!</b>",
         "early_bird_already": "⚠️ Sei già registrato.",
         "early_bird_full": "⚠️ Posti esauriti.",
@@ -200,7 +226,7 @@ TRANSLATIONS = {
         "admin_stats": "📊 Estadísticas de Admin",
         "sub": "🟢 VIP (2.99€ Stripe)",
         "web3": "🟢 MetaMask (0.50€)",
-        "early_bird_btn": "🎯 Reserva anticipada (19.99€ primeros 500)",
+        "early_bird_btn": "🎯 Reserva anticipada (19.99€ en vez de 24.99€)",
         "bill_elec": "🟢 Electricidad",
         "bill_water": "🟢 Agua",
         "bill_phone": "🟢 Teléfono",
@@ -209,8 +235,8 @@ TRANSLATIONS = {
         "feedback_prompt": "🟢 Escribe tus comentarios:",
         "feedback_thanks": "🟢 ¡Comentarios enviados!",
         "ledger_report": "🟢 <b>Registro:</b> {count}",
-        "test_payment_text": "🧪 <b>Pago:</b>\n\nGratis durante la prueba.",
-        "early_bird_msg": "🟢 <b>¡Bienvenido a la lista de reserva anticipada!</b>\n\nExclusivo para los <b>primeros 500 usuarios</b>.\n\n📊 <i>Registrados: <b>{count} / 500</b></i>",
+        "test_payment_text": "🧪 <b>Pago:</b>\n\nGratis durante la prueba.\n\n💡 <b>Tarifas futuras:</b>\n• Transacción: <b>0.50€</b>\n• Suscripción mensual: <b>2.99€</b>\n• Suscripción anual: <b>24.99€</b>",
+        "early_bird_msg": "🟢 <b>¡Bienvenido a la lista de reserva anticipada!</b>\n\nExclusivo para los <b>primeros 500 usuarios</b>.\n\n🎁 Consigue el plan anual por <b>19.99€</b> en vez de <b>24.99€</b>.\n\n📊 <i>Registrados: <b>{count} / 500</b></i>",
         "early_bird_success": "✅ <b>¡Registro exitoso!</b> Tu plaza está asegurada.",
         "early_bird_already": "⚠️ Ya estás registrado.",
         "early_bird_full": "⚠️ Cupo completo.",
@@ -246,7 +272,6 @@ def get_main_keyboard(t, user_id, bot_username=""):
         InlineKeyboardButton(t["web3"], callback_data="web3")
     )
     
-    # إضافة زر الحجز المبكر بشكل بارز في القائمة
     keyboard.add(InlineKeyboardButton(t["early_bird_btn"], callback_data="early_bird_info"))
     
     if bot_username:
@@ -266,6 +291,7 @@ async def send_welcome(message: types.Message):
         return
 
     user_interactions.add(user_id)
+    save_data()
     user_states[user_id] = "main_menu"
     lang = get_lang(message)
     t = TRANSLATIONS[lang]
@@ -282,6 +308,7 @@ async def handle_smart_sensor(message: types.Message):
         return
 
     user_interactions.add(user_id)
+    save_data()
     lang = get_lang(message)
     t = TRANSLATIONS[lang]
     current_state = user_states.get(user_id, "main_menu")
@@ -309,12 +336,12 @@ async def process_callbacks(call: types.CallbackQuery) -> None:
         return
 
     user_interactions.add(user_id)
+    action_counter["clicks"] += 1
+    save_data()
 
     lang = get_lang(call)
     t = TRANSLATIONS[lang]
     await call.answer()
-    
-    action_counter["clicks"] += 1
 
     if call.data == "admin_stats" and user_id == ADMIN_CHAT_ID:
         total_users = len(user_interactions)
@@ -339,7 +366,6 @@ async def process_callbacks(call: types.CallbackQuery) -> None:
         await call.message.answer(t["ledger_report"].format(count=count), parse_mode="HTML")
         return
 
-    # معالج عرض تفاصيل الحجز المبكر وزر التأكيد بداخله
     if call.data == "early_bird_info":
         user_states[user_id] = "main_menu"
         count = len(early_bird_users)
@@ -350,7 +376,6 @@ async def process_callbacks(call: types.CallbackQuery) -> None:
         await call.message.answer(t["early_bird_msg"].format(count=count), reply_markup=keyboard, parse_mode="HTML")
         return
 
-    # معالج عملية تأكيد التسجيل الفعلي في قائمة أول 500 شخص
     if call.data == "confirm_early_bird":
         user_states[user_id] = "main_menu"
         
@@ -362,11 +387,10 @@ async def process_callbacks(call: types.CallbackQuery) -> None:
             await call.message.answer(t["early_bird_full"], parse_mode="HTML")
             return
             
-        # تسجيل المستخدم بنجاح
         early_bird_users.add(user_id)
+        save_data()
         await call.message.answer(t["early_bird_success"], parse_mode="HTML")
         
-        # إشعار الإدارة فور تسجيل شخص جديد في الحجز المبكر
         try:
             admin_notify = f"🎯 <b>تسجيل جديد في الحجز المبكر (VIP)!</b>\n👤 User ID: <code>{user_id}</code>\n📊 العدد الحالي: {len(early_bird_users)} / 500"
             await bot.send_message(ADMIN_CHAT_ID, admin_notify, parse_mode="HTML")
