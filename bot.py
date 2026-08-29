@@ -21,10 +21,10 @@ action_counter = {"clicks": 0}  # عداد التفاعلات والنقرات
 
 BLOCKED_COUNTRIES = ["ru", "ir"]
 
-# القاموس الشامل للغات الست (إعادة الأسعار الحقيقية لأزرار الدفع ليعرف المستخدمون التكلفة المستقبلية)
+# القاموس الشامل للغات الست مع الأسعار الواضحة تماماً في أزرار الدفع
 TRANSLATIONS = {
     "ar": {
-        "welcome": "🟢 <b>أهلاً بك في بوت لينا (منصة الأعمال الذكية)!</b>\n\n⚠️ <i>ملاحظة: البوت حالياً في المرحلة التجريبية ريثما يتم التسجيل النظامي وتأسيس الشركة رسميًا لدفع الضرائب والخدمات المالية.</i>\n\nاختر الخدمة أو طريقة الدفع المطلوبة أدناه:",
+        "welcome": "🟢 <b>أهلاً بك في بوت لينا (منصة الأعمال الذكية)!</b>\n\n⚠️ <i>ملاحظة هامة: البوت حالياً في المرحلة التجريبية ريثما يتم التسجيل النظامي وتأسيس الشركة رسمياً للامتثال الضريبي والمالي، وجميع المعاملات الحالية مجانية ولن يتم خصم أي مبالغ.</i>\n\nاختر الخدمة أو طريقة الدفع المطلوبة أدناه:",
         "blocked": "عذراً، الخدمة غير متاحة في منطقتك.",
         "real_estate": "🟢 عقارات دولية",
         "cars": "🟢 قطاع السيارات",
@@ -45,13 +45,13 @@ TRANSLATIONS = {
         "feedback_prompt": "🟢 تفضل يا غالي، اكتب ملاحظتك أو شكواك للإدارة:",
         "feedback_thanks": "🟢 تم إرسال ملاحظتك بنجاح للإدارة!",
         "ledger_report": "🟢 <b>السجل المحاسبي (التجريبي):</b> الحركات المسجلة: {count}",
-        "test_payment_text": "🧪 <b>بوابة الدفع التجريبية:</b>\n\nالخدمات المالية والضريبية مغلقة مؤقتاً لحين استكمال تأسيس الشركة رسمياً وتفعيل الربط المالي النظامي.",
+        "test_payment_text": "🧪 <b>بوابة الدفع التجريبية:</b>\n\nالخدمات المالية والضريبية مغلقة مؤقتاً لحين استكمال تأسيس الشركة رسمياً وتفعيل الربط المالي النظامي، ولن يتم خصم أي شيء منك الآن.",
         "stats_report": "📊 <b>إحصائيات تفاعل البوت:</b>\n\n👥 عدد المستخدمين الكلي: <b>{users}</b>\n⚡ عدد تفاعلات النقر والخدمات: <b>{clicks}</b>",
         "quick_reply": "🟢 مرحباً بك مجدداً. اختر إحدى الخدمات:",
         "share_text": "🤖 منصة الأعمال الذكية بوت لينا (Lina AI). جربه الآن:"
     },
     "de": {
-        "welcome": "🟢 <b>Willkommen beim Lina Bot (Smart Business Platform)!</b>\n\n⚠️ <i>Hinweis: Dieser Bot befindet sich in der Testphase bis zur offiziellen Unternehmensgründung.</i>\n\nWählen Sie unten einen Dienst aus:",
+        "welcome": "🟢 <b>Willkommen beim Lina Bot (Smart Business Platform)!</b>\n\n⚠️ <i>Hinweis: Der Bot befindet sich in der Testphase bis zur offiziellen Firmengründung.</i>\n\nWählen Sie unten einen Dienst aus:",
         "blocked": "Entschuldigung, dieser Dienst ist in Ihrer Region nicht verfügbar.",
         "real_estate": "🟢 Internationale Immobilien",
         "cars": "🟢 Automobilsektor",
@@ -181,7 +181,7 @@ TRANSLATIONS = {
         "feedback_thanks": "🟢 ¡Comentarios enviados!",
         "ledger_report": "🟢 <b>Registro:</b> {count}",
         "test_payment_text": "🧪 <b>Pago:</b>\n\nDeshabilitado hasta la constitución oficial de la empresa.",
-        "stats_report": "📊 <b>Estadísticas:</b>\n\n👥 Usuarios: <b>{users}</b>\n⚡ Interacciones: <b>{clicks}</b>",
+        "stats_report": "📊 <b>Estadísticas:</b>\n\n👥 Usuarios: <b>{users}</b>\n⚡ Total interactions: <b>{clicks}</b>",
         "quick_reply": "🟢 Bienvenido de nuevo:",
         "share_text": "🤖 Prueba el bot Lina AI:"
     }
