@@ -1,3 +1,4 @@
+
 import logging
 import json
 import os
@@ -6,7 +7,6 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 API_TOKEN = os.getenv("BOT_TOKEN")
 
-# رقم الآيدي الخاص بك للإدارة وتلقي الملاحظات والإحصائيات بشكل آمن
 ADMIN_CHAT_ID = 8807102611  
 
 logging.basicConfig(level=logging.INFO)
@@ -18,14 +18,12 @@ user_states = {}
 user_data = {}
 user_ledger = {}
 
-# ملف حفظ البيانات لضمان عدم ضياع الإحصائيات عند إعادة التشغيل أو التحديث
 DATA_FILE = "bot_data.json"
 user_interactions = set()
 early_bird_users = set()
 action_counter = {"clicks": 0}
 EARLY_BIRD_LIMIT = 500
 
-# تحميل البيانات السابقة إن وجدت
 if os.path.exists(DATA_FILE):
     try:
         with open(DATA_FILE, "r", encoding="utf-8") as f:
@@ -36,7 +34,6 @@ if os.path.exists(DATA_FILE):
     except Exception as e:
         logging.error(f"Error loading saved data: {e}")
 
-# دالة لحفظ البيانات فوراً على القرص الصلب
 def save_data():
     try:
         data = {
@@ -265,7 +262,12 @@ def get_main_keyboard(t, user_id, bot_username=""):
         InlineKeyboardButton(t["bill_phone"], callback_data="bill_phone"),
         InlineKeyboardButton(t["bill_tax"], callback_data="bill_tax"),
         InlineKeyboardButton(t["ledger"], callback_data="view_ledger"),
-        InlineKeyboardButton(t["feedback"], callback_data="leave_feedback"),
+    )
+    
+    if user_id != ADMIN_CHAT_ID:
+        keyboard.add(InlineKeyboardButton(t["feedback"], callback_data="leave_feedback"))
+        
+    keyboard.add(
         InlineKeyboardButton(t["services"], callback_data="services"),
         InlineKeyboardButton(t["containers"], callback_data="containers"),
         InlineKeyboardButton(t["sub"], callback_data="sub"),
