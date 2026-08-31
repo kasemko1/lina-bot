@@ -17,7 +17,6 @@ dp = Dispatcher(bot)
 user_states = {}
 user_data = {}
 user_ledger = {}
-verified_users = set()  # قائمة المستخدمين الذين أكملوا التحقق (KYC)
 
 DATA_FILE = "bot_data.json"
 user_interactions = set()
@@ -31,7 +30,6 @@ if os.path.exists(DATA_FILE):
             saved_data = json.load(f)
             user_interactions = set(saved_data.get("users", []))
             early_bird_users = set(saved_data.get("early_birds", []))
-            verified_users = set(saved_data.get("verified_users", []))
             action_counter = {"clicks": saved_data.get("clicks", 0)}
     except Exception as e:
         logging.error(f"Error loading saved data: {e}")
@@ -41,7 +39,6 @@ def save_data():
         data = {
             "users": list(user_interactions),
             "early_birds": list(early_bird_users),
-            "verified_users": list(verified_users),
             "clicks": action_counter["clicks"]
         }
         with open(DATA_FILE, "w", encoding="utf-8") as f:
@@ -53,12 +50,9 @@ BLOCKED_COUNTRIES = ["ru", "ir"]
 
 TRANSLATIONS = {
     "ar": {
-        "welcome": "🟢 <b>أهلاً بك في بوت لينا (منصة الأعمال الذكية)!</b>\n\n⚠️ <i>ملاحظة هامة: البوت حالياً في المرحلة التجريبية (لمدة 3 أسابيع إلى شهر)، ولن يتم تفعيل الخدمات المدفوعة أو الإطلاق الرسمي والنظامي الكامل إلا بعد استكمال كافة الإجراءات وتأسيس الشركة بشكل رسمي وقانوني في ألمانيا.</i>\n\nاختر الخدمة أو طريقة الدفع المطلوبة أدناه:",
+        "welcome": "🟢 <b>أهلاً بك في بوت لينا (منصة الأعمال الذكية)!</b>\n\n⚠️ <i>ملاحظة هامة: البوت حالياً في المرحلة التجريبية المجانية، ولن يتم تفعيل الخدمات المدفوعة أو نظام التحقق الرسمي (KYC) إلا بعد استكمال تأسيس الشركة بشكل رسمي وقانوني في ألمانيا.</i>\n\nاختر الخدمة أو تصفح الأقسام أدناه:",
         "blocked": "عذراً، الخدمة غير متاحة في منطقتك.",
-        "kyc_prompt": "🔒 <b>تأكيد الهوية الأمني (KYC):</b>\n\nلضمان أعلى معايير الحماية القانونية وفقاً لمعايير الاتحاد الأوروبي وتأمين حسابك بالبنية اللامركزية، يرجى إتمام التحقق السريع قبل البدء:",
-        "kyc_fast_btn": "✅ التحقق السريع بالهوية الرقمية (فوري)",
-        "kyc_pi_btn": "🌐 ربط شبكة الحماية (Pi Network KYC)",
-        "kyc_success": "✅ <b>تم التحقق بنجاح!</b>\n\nأصبح حسابك مؤمناً بالكامل وجاهزاً لاستخدام خدمات بوت لينا.",
+        "kyc_coming_soon": "🔒 <b>تحقق الهوية المستقبلي (KYC & Pi Network):</b>\n\nنود إعلامك أن نظام التحقق الأمني الكامل سيتم عبر <b>شبكة Pi Network</b> اللامركزية، والتي تعتمد على <b>أكثر من 420 ألف عقدة (Nodes) نشطة</b> لضمان أمان مطلق لبيانات المستخدمين وحمايتها كلياً على تقنية البلوكشين.\n\n✨ <i>هذه الميزة قيد التجهيز وستُفعل رسمياً بالتزامن مع الإطلاق القانوني والتسجيل الرسمي للشركة في ألمانيا. التجربة حالياً متاحة للجميع مجاناً!</i>",
         "real_estate": "🟢 عقارات دولية",
         "cars": "🟢 قطاع السيارات",
         "services": "🟢 خدمات عامة",
@@ -71,6 +65,7 @@ TRANSLATIONS = {
         "sub": "🟢 VIP - بطاقة بنكية / اشتراك (Stripe 2.99€)",
         "web3": "🟢 دفع رقمي سريع - TON / Crypto (0.50€)",
         "early_bird_btn": "🎯 حجز مبكر: الباقة السنوية (19.99€ بدلاً من 24.99€)",
+        "kyc_main_btn": "🔒 التحقق الأمني (قريباً عبر Pi Network)",
         "bill_elec": "🟢 فاتورة الكهرباء",
         "bill_water": "🟢 فاتورة المياه",
         "bill_phone": "🟢 فاتورة الاتصالات",
@@ -84,125 +79,116 @@ TRANSLATIONS = {
         "early_bird_success": "✅ <b>تم تسجيلك بنجاح في قائمة الحجز المبكر الحصرية!</b>",
         "early_bird_already": "⚠️ <b>أنت مسجل بالفعل!</b>",
         "early_bird_full": "⚠️ عذراً، اكتمل العدد المخصص للحجز المبكر (500 مشترك).",
-        "stats_report": "📊 <b>إحصائيات تفاعل البوت:</b>\n\n👥 إجمالي المستخدمين: <b>{users}</b>\n🔒 الموثقون (KYC): <b>{verified}</b>\n⚡ إجمالي التفاعلات: <b>{clicks}</b>\n🎯 مسجلو الحجز المبكر: <b>{early_count} / 500</b>",
+        "stats_report": "📊 <b>إحصائيات تفاعل البوت:</b>\n\n👥 إجمالي المستخدمين: <b>{users}</b>\n⚡ إجمالي التفاعلات: <b>{clicks}</b>\n🎯 مسجلو الحجز المبكر: <b>{early_count} / 500</b>",
         "quick_reply": "🟢 مرحباً بك مجدداً. اختر إحدى الخدمات من القائمة أدناه:",
         "share_text": "🤖 منصة الأعمال الذكية بوت لينا (Lina AI). جربه الآن:"
     },
     "de": {
-        "welcome": "🟢 <b>Willkommen beim Lina Bot (Smart Business Platform)!</b>\n\n⚠️ <i>Hinweis: Testphase. Offizieller Start nach Firmengründung in Deutschland.</i>\n\nWählen Sie unten einen Dienst aus:",
-        "blocked": "Entschuldigung, dieser Dienst ist in Ihrer Region nicht verfügbar.",
-        "kyc_prompt": "🔒 <b>Sicherheits-Identitätsprüfung (KYC):</b>\n\nBitte schließen Sie die schnelle Verifizierung ab:",
-        "kyc_fast_btn": "✅ Schnelle digitale ID-Prüfung",
-        "kyc_pi_btn": "🌐 Pi Network Sicherheitsbindung",
-        "kyc_success": "✅ <b>Erfolgreich verifiziert!</b>",
-        "real_estate": "🟢 Internationale Immobilien",
-        "cars": "🟢 Automobilsektor",
-        "services": "🟢 Allgemeine Dienste",
-        "ledger": "🟢 Buchhaltungsbuch",
-        "containers": "🟢 Versand & Container",
+        "welcome": "🟢 <b>Willkommen beim Lina Bot!</b>",
+        "blocked": "Region gesperrt.",
+        "kyc_coming_soon": "🔒 KYC & Pi Network Verifizierung in Kürze.",
+        "real_estate": "🟢 Immobilien",
+        "cars": "🟢 Autos",
+        "services": "🟢 Dienste",
+        "ledger": "🟢 Buchhaltung",
+        "containers": "🟢 Container",
         "support": "🟢 Support",
-        "feedback": "🟢 Feedback / Beschwerde",
-        "share_bot": "📤 Bot mit Freunden teilen",
-        "admin_stats": "📊 Admin Statistik",
-        "sub": "🟢 VIP - Karte / Abo (Stripe 2.99€)",
-        "web3": "🟢 Krypto-Zahlung - TON (0.50€)",
-        "early_bird_btn": "🎯 Frühbucher: Jahresabo (19.99€ statt 24.99€)",
-        "bill_elec": "🟢 Stromrechnung",
-        "bill_water": "🟢 Wasserrechnung",
-        "bill_phone": "🟢 Telefonrechnung",
-        "bill_tax": "🟢 Kfz-Steuer",
-        "test_notice": "⚠️ <b>Test-Hinweis:</b>\n\nSie haben gewählt: <b>{item}</b>.",
-        "feedback_prompt": "🟢 Bitte geben Sie Ihr Feedback ein:",
-        "feedback_thanks": "🟢 Vielen Dank! Ihr Feedback wurde gesendet.",
-        "ledger_report": "🟢 <b>Test-Buchhaltung:</b> Registrierte Einträge: {count}",
-        "test_payment_text": "🧪 <b>Zahlungssystem:</b>\n\nZahlung via Kreditkarte (Stripe) oder Krypto (TON) verfügbar.",
-        "early_bird_msg": "🟢 <b>Frühbucher-Warteliste!</b>",
-        "early_bird_success": "✅ <b>Erfolgreich registriert!</b>",
-        "early_bird_already": "⚠️ Sie sind bereits registriert.",
-        "early_bird_full": "⚠️ Kontingent erschöpft.",
-        "stats_report": "📊 <b>Statistiken:</b>\n\n👥 Benutzer: <b>{users}</b>\n🔒 Verifiziert: <b>{verified}</b>",
+        "feedback": "🟢 Feedback",
+        "share_bot": "📤 Teilen",
+        "admin_stats": "📊 Statistik",
+        "sub": "🟢 VIP (Stripe 2.99€)",
+        "web3": "🟢 Krypto (TON 0.50€)",
+        "early_bird_btn": "🎯 Frühbucher (19.99€)",
+        "kyc_main_btn": "🔒 Sicherheits-KYC (Demnächst)",
+        "bill_elec": "🟢 Strom",
+        "bill_water": "🟢 Wasser",
+        "bill_phone": "🟢 Telefon",
+        "bill_tax": "🟢 Steuer",
+        "test_notice": "⚠️ Test: <b>{item}</b>",
+        "feedback_prompt": "🟢 Feedback:",
+        "feedback_thanks": "🟢 Gesendet!",
+        "ledger_report": "🟢 Buchhaltung: {count}",
+        "test_payment_text": "🧪 Zahlungsoptionen aktiv.",
+        "early_bird_msg": "🟢 Frühbucher-Warteliste",
+        "early_bird_success": "✅ Registriert!",
+        "early_bird_already": "⚠️ Bereits registriert.",
+        "early_bird_full": "⚠️ Voll.",
+        "stats_report": "📊 Nutzer: {users}",
         "quick_reply": "🟢 Willkommen zurück:",
-        "share_text": "🤖 Entdecken Sie den Lina KI Bot:"
+        "share_text": "🤖 Testen Sie Lina AI:"
     },
     "en": {
-        "welcome": "🟢 <b>Welcome to Lina Bot (Smart Business Platform)!</b>\n\n⚠️ <i>Trial phase. Full launch follows company registration in Germany.</i>\n\nSelect a service below:",
+        "welcome": "🟢 <b>Welcome to Lina Bot!</b>",
         "blocked": "Region blocked.",
-        "kyc_prompt": "🔒 <b>Security Identity Verification (KYC):</b>\n\nPlease complete fast verification to proceed:",
-        "kyc_fast_btn": "✅ Fast Digital ID Verification",
-        "kyc_pi_btn": "🌐 Pi Network Security Link",
-        "kyc_success": "✅ <b>Successfully Verified!</b>",
+        "kyc_coming_soon": "🔒 KYC & Pi Network verification coming soon, backed by over 420K nodes for absolute blockchain security.",
         "real_estate": "🟢 Real Estate",
         "cars": "🟢 Automotive",
         "services": "🟢 General Services",
-        "ledger": "🟢 Accounting Ledger",
+        "ledger": "🟢 Ledger",
         "containers": "🟢 Containers",
-        "support": "🟢 Digital Support",
-        "feedback": "🟢 Leave Feedback",
-        "share_bot": "📤 Share Bot with Friends",
-        "admin_stats": "📊 Admin Statistics",
-        "sub": "🟢 VIP - Card / Sub (Stripe 2.99€)",
-        "web3": "🟢 Crypto Fast Pay - TON (0.50€)",
-        "early_bird_btn": "🎯 Early Bird: Annual Pass (19.99€ instead of 24.99€)",
+        "support": "🟢 Support",
+        "feedback": "🟢 Feedback",
+        "share_bot": "📤 Share",
+        "admin_stats": "📊 Stats",
+        "sub": "🟢 VIP (Stripe 2.99€)",
+        "web3": "🟢 Crypto (TON 0.50€)",
+        "early_bird_btn": "🎯 Early Bird (19.99€)",
+        "kyc_main_btn": "🔒 Security KYC (Coming Soon)",
         "bill_elec": "🟢 Electricity",
         "bill_water": "🟢 Water",
         "bill_phone": "🟢 Phone",
-        "bill_tax": "🟢 Car Tax",
-        "test_notice": "⚠️ <b>Test Notice:</b>\n\nYou selected: <b>{item}</b>.",
-        "feedback_prompt": "🟢 Type your feedback:",
-        "feedback_thanks": "🟢 Feedback sent!",
-        "ledger_report": "🟢 <b>Ledger:</b> {count}",
-        "test_payment_text": "🧪 <b>Payment Gateways:</b> Supported via Stripe (Card) or TON (Crypto).",
-        "early_bird_msg": "🟢 <b>Early Bird Waitlist!</b>",
-        "early_bird_success": "✅ <b>Successfully registered!</b>",
+        "bill_tax": "🟢 Tax",
+        "test_notice": "⚠️ Test: <b>{item}</b>",
+        "feedback_prompt": "🟢 Feedback:",
+        "feedback_thanks": "🟢 Sent!",
+        "ledger_report": "🟢 Ledger: {count}",
+        "test_payment_text": "🧪 Payment gateways ready.",
+        "early_bird_msg": "🟢 Early Bird Waitlist",
+        "early_bird_success": "✅ Registered!",
         "early_bird_already": "⚠️ Already registered.",
-        "early_bird_full": "⚠️ Capacity reached.",
-        "stats_report": "📊 <b>Statistics:</b>\n\n👥 Users: <b>{users}</b>\n🔒 Verified: <b>{verified}</b>",
+        "early_bird_full": "⚠️ Full.",
+        "stats_report": "📊 Users: {users}",
         "quick_reply": "🟢 Welcome back:",
-        "share_text": "🤖 Try the Lina AI Bot:"
+        "share_text": "🤖 Try Lina AI:"
     },
     "fr": {
         "welcome": "🟢 <b>Bienvenue sur Lina Bot !</b>",
-        "blocked": "Région bloquée.",
-        "kyc_prompt": "🔒 <b>Vérification d'identité (KYC) :</b>",
-        "kyc_fast_btn": "✅ Vérification rapide",
-        "kyc_pi_btn": "🌐 Liaison Pi Network",
-        "kyc_success": "✅ <b>Vérifié avec succès !</b>",
+        "blocked": "Bloqué.",
+        "kyc_coming_soon": "🔒 KYC Bientôt disponible via Pi Network.",
         "real_estate": "🟢 Immobilier",
-        "cars": "🟢 Automobile",
-        "services": "🟢 Services généraux",
+        "cars": "🟢 Auto",
+        "services": "🟢 Services",
         "ledger": "🟢 Registre",
         "containers": "🟢 Conteneurs",
         "support": "🟢 Support",
         "feedback": "🟢 Avis",
         "share_bot": "📤 Partager",
         "admin_stats": "📊 Stats",
-        "sub": "🟢 VIP (Stripe 2.99€)",
-        "web3": "🟢 Crypto (TON 0.50€)",
-        "early_bird_btn": "🎯 Offre Précoce (19.99€)",
+        "sub": "🟢 VIP (Stripe)",
+        "web3": "🟢 Crypto (TON)",
+        "early_bird_btn": "🎯 Précoce",
+        "kyc_main_btn": "🔒 KYC (Bientôt)",
         "bill_elec": "🟢 Électricité",
         "bill_water": "🟢 Eau",
         "bill_phone": "🟢 Téléphone",
-        "bill_tax": "🟢 Taxe auto",
-        "test_notice": "⚠️ Test : <b>{item}</b>",
-        "feedback_prompt": "🟢 Commentaires :",
-        "feedback_thanks": "🟢 Envoyé !",
-        "ledger_report": "🟢 Registre : {count}",
-        "test_payment_text": "🧪 Paiement par Stripe ou TON disponible.",
-        "early_bird_msg": "🟢 Liste d'attente !",
-        "early_bird_success": "✅ Inscrit !",
-        "early_bird_already": "⚠️ Déjà inscrit.",
-        "early_bird_full": "⚠️ Complet.",
-        "stats_report": "📊 Stats : Utilisateurs {users}",
-        "quick_reply": "🟢 Bon retour :",
-        "share_text": "🤖 Essayez Lina AI :"
+        "bill_tax": "🟢 Taxe",
+        "test_notice": "⚠️ Test",
+        "feedback_prompt": "🟢 Avis",
+        "feedback_thanks": "🟢 Envoyé",
+        "ledger_report": "🟢 Registre",
+        "test_payment_text": "🧪 Test",
+        "early_bird_msg": "🟢 Liste",
+        "early_bird_success": "✅ Inscrit",
+        "early_bird_already": "⚠️ Déjà",
+        "early_bird_full": "⚠️ Complet",
+        "stats_report": "📊 Stats",
+        "quick_reply": "🟢 Retour",
+        "share_text": "🤖 Lina"
     },
     "it": {
         "welcome": "🟢 <b>Benvenuto in Lina Bot!</b>",
-        "blocked": "Regione bloccata.",
-        "kyc_prompt": "🔒 <b>Verifica d'identità (KYC):</b>",
-        "kyc_fast_btn": "✅ Verifica rapida",
-        "kyc_pi_btn": "🌐 Collegamento Pi Network",
-        "kyc_success": "✅ <b>Verificato con successo!</b>",
+        "blocked": "Bloccato.",
+        "kyc_coming_soon": "🔒 KYC In arrivo tramite Pi Network.",
         "real_estate": "🟢 Immobiliare",
         "cars": "🟢 Auto",
         "services": "🟢 Servizi",
@@ -212,61 +198,60 @@ TRANSLATIONS = {
         "feedback": "🟢 Feedback",
         "share_bot": "📤 Condividi",
         "admin_stats": "📊 Statistiche",
-        "sub": "🟢 VIP (Stripe 2.99€)",
-        "web3": "🟢 Crypto (TON 0.50€)",
-        "early_bird_btn": "🎯 Early Bird (19.99€)",
+        "sub": "🟢 VIP",
+        "web3": "🟢 Crypto",
+        "early_bird_btn": "🎯 Early Bird",
+        "kyc_main_btn": "🔒 KYC (In arrivo)",
         "bill_elec": "🟢 Elettricità",
         "bill_water": "🟢 Acqua",
         "bill_phone": "🟢 Telefono",
-        "bill_tax": "🟢 Tassa auto",
-        "test_notice": "⚠️ Test: <b>{item}</b>",
-        "feedback_prompt": "🟢 Inserisci feedback:",
-        "feedback_thanks": "🟢 Inviato!",
-        "ledger_report": "🟢 Registro: {count}",
-        "test_payment_text": "🧪 Pagamento tramite Stripe o TON.",
-        "early_bird_msg": "🟢 Lista d'attesa!",
-        "early_bird_success": "✅ Registrato!",
-        "early_bird_already": "⚠️ Già registrato.",
-        "early_bird_full": "⚠️ Esaurito.",
-        "stats_report": "📊 Utenti: {users}",
-        "quick_reply": "🟢 Bentornato:",
-        "share_text": "🤖 Prova Lina AI:"
+        "bill_tax": "🟢 Tassa",
+        "test_notice": "⚠️ Test",
+        "feedback_prompt": "🟢 Feedback",
+        "feedback_thanks": "🟢 Inviato",
+        "ledger_report": "🟢 Registro",
+        "test_payment_text": "🧪 Test",
+        "early_bird_msg": "🟢 Lista",
+        "early_bird_success": "✅ Registrato",
+        "early_bird_already": "⚠️ Già",
+        "early_bird_full": "⚠️ Esaurito",
+        "stats_report": "📊 Utenti",
+        "quick_reply": "🟢 Bentornato",
+        "share_text": "🤖 Prova"
     },
     "es": {
         "welcome": "🟢 <b>¡Bienvenido a Lina Bot!</b>",
-        "blocked": "Región bloqueada.",
-        "kyc_prompt": "🔒 <b>Verificación de identidad (KYC):</b>",
-        "kyc_fast_btn": "✅ Verificación rápida",
-        "kyc_pi_btn": "🌐 Enlace Pi Network",
-        "kyc_success": "✅ <b>¡Verificado con éxito!</b>",
+        "blocked": "Bloqueado.",
+        "kyc_coming_soon": "🔒 KYC Próximamente a través de Pi Network.",
         "real_estate": "🟢 Inmobiliaria",
-        "cars": "🟢 Automoción",
+        "cars": "🟢 Autos",
         "services": "🟢 Servicios",
         "ledger": "🟢 Registro",
         "containers": "🟢 Contenedores",
         "support": "🟢 Soporte",
         "feedback": "🟢 Comentarios",
         "share_bot": "📤 Compartir",
-        "admin_stats": "📊 Estadísticas",
-        "sub": "🟢 VIP (Stripe 2.99€)",
-        "web3": "🟢 Crypto (TON 0.50€)",
-        "early_bird_btn": "🎯 Early Bird (19.99€)",
+        "admin_stats": "📊 Stats",
+        "sub": "🟢 VIP",
+        "web3": "🟢 Crypto",
+        "early_bird_btn": "🎯 Early Bird",
+        "kyc_main_btn": "🔒 KYC (Próximamente)",
         "bill_elec": "🟢 Electricidad",
         "bill_water": "🟢 Agua",
         "bill_phone": "🟢 Teléfono",
         "bill_tax": "🟢 Impuesto",
-        "test_notice": "⚠️ Prueba: <b>{item}</b>",
-        "feedback_prompt": "🟢 Comentarios:",
-        "feedback_thanks": "🟢 ¡Enviado!",
-        "ledger_report": "🟢 Registro: {count}",
-        "test_payment_text": "🧪 Pago mediante Stripe o TON disponible.",
-        "early_bird_msg": "🟢 Lista de espera!",
-        "early_bird_success": "✅ ¡Registrado!",
-        "early_bird_already": "⚠️ Ya registrado.",
-        "early_bird_full": "⚠️ Completo.",
-        "stats_report": "📊 Usuarios: {users}",
-        "quick_reply": "🟢 Bienvenido de nuevo:",
-        "share_text": "🤖 Prueba Lina AI:"
+        "test_notice": "⚠️ Prueba",
+        "feedback_prompt": "🟢 Comentarios",
+        "feedback_thanks": "🟢 Enviado",
+        "ledger_report": "🟢 Registro",
+        "test_payment_text": "🧪 Prueba",
+        "early_bird_msg": "🟢 Lista",
+        "early_bird_success": "✅ Registrado",
+        "early_bird_already": "⚠️ Ya",
+        "early_bird_full": "⚠️ Completo",
+        "stats_report": "📊 Usuarios",
+        "quick_reply": "🟢 Bienvenido",
+        "share_text": "🤖 Prueba"
     }
 }
 
@@ -278,14 +263,6 @@ def get_lang(message_or_call):
             if code.startswith(lang):
                 return lang
     return "en"
-
-def get_kyc_keyboard(t):
-    keyboard = InlineKeyboardMarkup(row_width=1)
-    keyboard.add(
-        InlineKeyboardButton(t["kyc_fast_btn"], callback_data="do_kyc_fast"),
-        InlineKeyboardButton(t["kyc_pi_btn"], callback_data="do_kyc_pi")
-    )
-    return keyboard
 
 def get_main_keyboard(t, user_id, bot_username=""):
     keyboard = InlineKeyboardMarkup(row_width=2)
@@ -311,6 +288,9 @@ def get_main_keyboard(t, user_id, bot_username=""):
     
     keyboard.add(InlineKeyboardButton(t["early_bird_btn"], callback_data="early_bird_info"))
     
+    # زر الـ KYC الترويجي غير المفعل حالياً
+    keyboard.add(InlineKeyboardButton(t["kyc_main_btn"], callback_data="kyc_info_notice"))
+    
     if bot_username:
         share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}&text={t['share_text']}"
         keyboard.add(InlineKeyboardButton(t["share_bot"], url=share_url))
@@ -329,16 +309,10 @@ async def send_welcome(message: types.Message):
 
     user_interactions.add(user_id)
     save_data()
+    user_states[user_id] = "main_menu"
     lang = get_lang(message)
     t = TRANSLATIONS[lang]
     
-    # التحقق عما إذا كان المستخدم قد أتم نظام الـ KYC مسبقاً
-    if user_id not in verified_users and user_id != ADMIN_CHAT_ID:
-        user_states[user_id] = "waiting_for_kyc"
-        await message.answer(t["kyc_prompt"], reply_markup=get_kyc_keyboard(t), parse_mode="HTML")
-        return
-
-    user_states[user_id] = "main_menu"
     bot_info = await bot.get_me()
     await message.answer(t["welcome"], reply_markup=get_main_keyboard(t, user_id, bot_info.username), parse_mode="HTML")
 
@@ -353,11 +327,6 @@ async def handle_smart_sensor(message: types.Message):
     lang = get_lang(message)
     t = TRANSLATIONS[lang]
     current_state = user_states.get(user_id, "main_menu")
-
-    if user_id not in verified_users and user_id != ADMIN_CHAT_ID:
-        user_states[user_id] = "waiting_for_kyc"
-        await message.answer(t["kyc_prompt"], reply_markup=get_kyc_keyboard(t), parse_mode="HTML")
-        return
 
     if current_state == "waiting_for_feedback":
         user_states[user_id] = "main_menu"
@@ -389,28 +358,15 @@ async def process_callbacks(call: types.CallbackQuery) -> None:
     t = TRANSLATIONS[lang]
     await call.answer()
 
-    # معالجة أزرار الـ KYC
-    if call.data in ["do_kyc_fast", "do_kyc_pi"]:
-        verified_users.add(user_id)
-        save_data()
-        user_states[user_id] = "main_menu"
-        
-        bot_info = await bot.get_me()
-        await call.message.answer(t["kyc_success"], parse_mode="HTML")
-        await call.message.answer(t["welcome"], reply_markup=get_main_keyboard(t, user_id, bot_info.username), parse_mode="HTML")
-        return
-
-    if user_id not in verified_users and user_id != ADMIN_CHAT_ID:
-        user_states[user_id] = "waiting_for_kyc"
-        await call.message.answer(t["kyc_prompt"], reply_markup=get_kyc_keyboard(t), parse_mode="HTML")
+    if call.data == "kyc_info_notice":
+        await call.message.answer(t["kyc_coming_soon"], parse_mode="HTML")
         return
 
     if call.data == "admin_stats" and user_id == ADMIN_CHAT_ID:
         total_users = len(user_interactions)
         total_clicks = action_counter["clicks"]
         early_count = len(early_bird_users)
-        verified_count = len(verified_users)
-        await call.message.answer(t["stats_report"].format(users=total_users, verified=verified_count, clicks=total_clicks, early_count=early_count), parse_mode="HTML")
+        await call.message.answer(t["stats_report"].format(users=total_users, clicks=total_clicks, early_count=early_count), parse_mode="HTML")
         return
 
     if call.data == "leave_feedback":
