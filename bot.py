@@ -86,7 +86,7 @@ TRANSLATIONS = {
     "de": {
         "welcome": "🟢 <b>Willkommen beim Lina Bot!</b>",
         "blocked": "Region gesperrt.",
-        "kyc_coming_soon": "🔒 KYC & Pi Network Verifizierung in Kürze.",
+        "kyc_coming_soon": "🔒 KYC & Pi Network Verifizierung in Kürze (über 420K Nodes).",
         "real_estate": "🟢 Immobilien",
         "cars": "🟢 Autos",
         "services": "🟢 Dienste",
@@ -99,7 +99,7 @@ TRANSLATIONS = {
         "sub": "🟢 VIP (Stripe 2.99€)",
         "web3": "🟢 Krypto (TON 0.50€)",
         "early_bird_btn": "🎯 Frühbucher (19.99€)",
-        "kyc_main_btn": "🔒 Sicherheits-KYC (Demnächst)",
+        "kyc_main_btn": "🔒 Sicherheits-KYC (Pi Network)",
         "bill_elec": "🟢 Strom",
         "bill_water": "🟢 Wasser",
         "bill_phone": "🟢 Telefon",
@@ -133,7 +133,7 @@ TRANSLATIONS = {
         "sub": "🟢 VIP (Stripe 2.99€)",
         "web3": "🟢 Crypto (TON 0.50€)",
         "early_bird_btn": "🎯 Early Bird (19.99€)",
-        "kyc_main_btn": "🔒 Security KYC (Coming Soon)",
+        "kyc_main_btn": "🔒 Security KYC (Pi Network)",
         "bill_elec": "🟢 Electricity",
         "bill_water": "🟢 Water",
         "bill_phone": "🟢 Phone",
@@ -167,7 +167,7 @@ TRANSLATIONS = {
         "sub": "🟢 VIP (Stripe)",
         "web3": "🟢 Crypto (TON)",
         "early_bird_btn": "🎯 Précoce",
-        "kyc_main_btn": "🔒 KYC (Bientôt)",
+        "kyc_main_btn": "🔒 KYC (Pi Network)",
         "bill_elec": "🟢 Électricité",
         "bill_water": "🟢 Eau",
         "bill_phone": "🟢 Téléphone",
@@ -201,7 +201,7 @@ TRANSLATIONS = {
         "sub": "🟢 VIP",
         "web3": "🟢 Crypto",
         "early_bird_btn": "🎯 Early Bird",
-        "kyc_main_btn": "🔒 KYC (In arrivo)",
+        "kyc_main_btn": "🔒 KYC (Pi Network)",
         "bill_elec": "🟢 Elettricità",
         "bill_water": "🟢 Acqua",
         "bill_phone": "🟢 Telefono",
@@ -235,7 +235,7 @@ TRANSLATIONS = {
         "sub": "🟢 VIP",
         "web3": "🟢 Crypto",
         "early_bird_btn": "🎯 Early Bird",
-        "kyc_main_btn": "🔒 KYC (Próximamente)",
+        "kyc_main_btn": "🔒 KYC (Pi Network)",
         "bill_elec": "🟢 Electricidad",
         "bill_water": "🟢 Agua",
         "bill_phone": "🟢 Teléfono",
@@ -288,7 +288,7 @@ def get_main_keyboard(t, user_id, bot_username=""):
     
     keyboard.add(InlineKeyboardButton(t["early_bird_btn"], callback_data="early_bird_info"))
     
-    # زر الـ KYC الترويجي غير المفعل حالياً
+    # ضمان ظهور زر الـ KYC في جميع اللغات
     keyboard.add(InlineKeyboardButton(t["kyc_main_btn"], callback_data="kyc_info_notice"))
     
     if bot_username:
